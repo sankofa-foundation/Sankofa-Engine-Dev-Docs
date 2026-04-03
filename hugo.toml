@@ -1,0 +1,87 @@
+baseURL = "https://sankofa-labs.github.io/sankofa-engine-dev-docs/"
+title = "Sankofa Engine Documentation"
+contentDir = "content"
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = false
+
+[module]
+  proxy = "direct"
+  [module.hugoVersion]
+    extended = true
+    min = "0.110.0"
+  [[module.imports]]
+    path = "github.com/google/docsy"
+    disable = false
+
+[languages]
+  [languages.en]
+    languageName = "English"
+    weight = 1
+    [languages.en.params]
+      title = "Sankofa Engine Documentation"
+      description = "Developer documentation for the Sankofa Engine — a sharded, privacy-preserving financial ledger for digital assets."
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.parser.attribute]
+      block = true
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = "github"
+
+[params]
+  copyright = "Sankofa Labs Inc."
+  version = "v0.1.0-alpha"
+  archived_version = false
+  version_menu = "Versions"
+  url_latest_version = "https://sankofa-labs.github.io/sankofa-engine-dev-docs/"
+  offlineSearch = true
+  prism_syntax_highlighting = false
+
+  [params.ui]
+    sidebar_menu_compact = true
+    sidebar_menu_foldable = true
+    sidebar_search_disable = false
+    navbar_logo = false
+    footer_about_disable = true
+    breadcrumb_disable = false
+
+  [params.ui.feedback]
+    enable = false
+
+  [params.ui.readingtime]
+    enable = false
+
+  [params.links]
+    [[params.links.developer]]
+      name = "GitHub"
+      url = "https://github.com/sankofa-labs/sankofa-engine"
+      icon = "fab fa-github"
+      desc = "Source code (Enterprise customers)"
+
+[menu]
+  [[menu.main]]
+    name = "Overview"
+    weight = 10
+    url = "/overview/"
+  [[menu.main]]
+    name = "API Reference"
+    weight = 20
+    url = "/api-reference/"
+  [[menu.main]]
+    name = "Guides"
+    weight = 30
+    url = "/guides/"
+  [[menu.main]]
+    name = "Reference"
+    weight = 40
+    url = "/reference/"
+  [[menu.main]]
+    name = "Security"
+    weight = 50
+    url = "/security/"
+  [[menu.main]]
+    name = "Changelog"
+    weight = 60
+    url = "/changelog/"

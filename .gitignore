@@ -1,2 +1,17 @@
+# Hugo
+/public/
+/resources/_gen/
+/.hugo_build.lock
+/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
 # Worktrees
 .worktrees/

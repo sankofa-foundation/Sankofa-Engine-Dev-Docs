@@ -1,0 +1,11 @@
+{
+  "name": "sankofa-engine-dev-docs",
+  "version": "0.1.0",
+  "description": "Sankofa Engine developer documentation",
+  "private": true,
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1"
+  }
+}

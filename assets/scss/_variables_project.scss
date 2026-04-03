@@ -1,0 +1,23 @@
+// Professional light-mode theme for Sankofa Engine docs
+// Dark mode will be added in a future release
+
+// Brand colors — clean, professional, fintech-appropriate
+$primary: #1a56db;       // Deep blue — trust, finance
+$secondary: #6b7280;     // Neutral gray
+$success: #059669;       // Green — confirmations
+$warning: #d97706;       // Amber — cautions
+$danger: #dc2626;        // Red — errors
+
+// Typography
+$font-family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace: "JetBrains Mono", "Fira Code", "Cascadia Code", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+// Navbar
+$navbar-bg: #ffffff;
+$navbar-text-color: #1f2937;
+
+// Sidebar
+$sidebar-bg: #f9fafb;
+
+// Code blocks
+$code-bg: #f3f4f6;
