@@ -39,6 +39,8 @@ tags:
     description: Compliance proofs and verification.
   - name: Attestations
     description: Create and query attestation records.
+  - name: Authentication
+    description: Token exchange and credential management.
   - name: Ledger
     description: Shard status and storage metrics.
 
@@ -46,6 +48,50 @@ security:
   - BearerAuth: []
 
 paths:
+  # ---------------------------------------------------------------------------
+  # Authentication
+  # ---------------------------------------------------------------------------
+  /v1/auth/token:
+    post:
+      operationId: createToken
+      tags: [Authentication]
+      summary: Exchange credentials for a JWT token
+      description: |
+        Exchanges client credentials for a short-lived JWT access token.
+        This is the authentication entry point -- no bearer token is required.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+            example:
+              client_id: "your-client-id"
+              client_secret: "your-client-secret"
+      responses:
+        "200":
+          description: Token issued successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+              example:
+                access_token: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
+                token_type: "bearer"
+                expires_in: 3600
+        "401":
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                type: "https://api.example.com/problems/invalid-credentials"
+                title: Unauthorized
+                status: 401
+                detail: "The provided client_id or client_secret is invalid."
+
   # ---------------------------------------------------------------------------
   # Health
   # ---------------------------------------------------------------------------
@@ -1891,6 +1937,36 @@ components:
           type: string
           format: date-time
           description: Timestamp when metrics were sampled.
+
+    # -------------------------------------------------------------------------
+    # Authentication schemas
+    # -------------------------------------------------------------------------
+    TokenRequest:
+      type: object
+      required:
+        - client_id
+        - client_secret
+      properties:
+        client_id:
+          type: string
+          description: The client identifier issued during onboarding.
+        client_secret:
+          type: string
+          description: The client secret issued during onboarding.
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: A short-lived JWT access token signed with ES256.
+        token_type:
+          type: string
+          enum: [bearer]
+          description: Token type (always "bearer").
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds.
 
     # -------------------------------------------------------------------------
     # Error schema (RFC 7807)

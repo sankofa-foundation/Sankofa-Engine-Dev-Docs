@@ -41,25 +41,23 @@ curl -X POST https://api.example.com/v1/assertions/proof-of-liabilities \
 
 ```json
 {
-  "proof_id": "prf_01HYX4ABCDEF123456789",
-  "type": "proof-of-liabilities",
+  "assertion_type": "proof-of-liabilities",
   "requester": "auditor@regulator.gov",
-  "proof": "0x03a1b2c3d4e5f6...hex-encoded-proof...",
-  "commitment": "0xf6e5d4c3b2a1...hex-encoded-commitment...",
-  "generated_at": "2026-04-03T15:00:00.000Z",
-  "expires_at": "2026-04-10T15:00:00.000Z"
+  "result": {
+    "total_liabilities": "25000000.00",
+    "merkle_root": "sha256:4a7d1ed414474e4033ac29ccb8653d9b",
+    "generated_at": "2026-04-03T15:00:00.000Z"
+  },
+  "signature": "MEUCIBkL...base64..."
 }
 ```
 
-| Field         | Type   | Description                                               |
-|---------------|--------|-----------------------------------------------------------|
-| `proof_id`    | string | Unique identifier for this proof                          |
-| `type`        | string | The assertion type                                        |
-| `requester`   | string | The entity that requested the proof                       |
-| `proof`       | string | Hex-encoded ZKP proof bytes                               |
-| `commitment`  | string | Hex-encoded cryptographic commitment to the proven value  |
-| `generated_at`| string | ISO 8601 timestamp when the proof was generated           |
-| `expires_at`  | string | ISO 8601 timestamp after which the proof should be regenerated |
+| Field            | Type   | Description                                               |
+|------------------|--------|-----------------------------------------------------------|
+| `assertion_type` | string | The type of assertion generated                           |
+| `requester`      | string | Account ID of the entity that requested the proof         |
+| `result`         | object | Assertion-specific result payload                         |
+| `signature`      | string | Base64-encoded ECDSA P-256 DER signature over the result  |
 
 ### Proof of Provenance
 
@@ -72,9 +70,7 @@ curl -X POST https://api.example.com/v1/assertions/proof-of-provenance \
   -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..." \
   -H "Content-Type: application/json" \
   -d '{
-    "requester": "compliance@partner.com",
-    "asset_class": "carbon-credits-2026",
-    "asset_instance": "cc-inst-00042"
+    "requester": "compliance@partner.com"
   }'
 ```
 
@@ -82,14 +78,14 @@ curl -X POST https://api.example.com/v1/assertions/proof-of-provenance \
 
 ```json
 {
-  "proof_id": "prf_01HYX4GHIJKL987654321",
-  "type": "proof-of-provenance",
+  "assertion_type": "proof-of-provenance",
   "requester": "compliance@partner.com",
-  "asset_class": "carbon-credits-2026",
-  "asset_instance": "cc-inst-00042",
-  "proof": "0x07b8c9d0e1f2...hex-encoded-proof...",
-  "generated_at": "2026-04-03T15:05:00.000Z",
-  "expires_at": "2026-04-10T15:05:00.000Z"
+  "result": {
+    "assets_verified": 142,
+    "provenance_valid": true,
+    "generated_at": "2026-04-03T15:05:00.000Z"
+  },
+  "signature": "MEQCIF7x...base64..."
 }
 ```
 
@@ -104,13 +100,7 @@ curl -X POST https://api.example.com/v1/assertions/proof-of-compliance \
   -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..." \
   -H "Content-Type: application/json" \
   -d '{
-    "requester": "auditor@regulator.gov",
-    "rule_id": "aml-threshold-check",
-    "scope": {
-      "account_id": "alice@example.com",
-      "date_from": "2026-01-01T00:00:00Z",
-      "date_to": "2026-04-01T00:00:00Z"
-    }
+    "requester": "auditor@regulator.gov"
   }'
 ```
 
@@ -118,61 +108,63 @@ curl -X POST https://api.example.com/v1/assertions/proof-of-compliance \
 
 ```json
 {
-  "proof_id": "prf_01HYX4MNOPQR111222333",
-  "type": "proof-of-compliance",
+  "assertion_type": "proof-of-compliance",
   "requester": "auditor@regulator.gov",
-  "rule_id": "aml-threshold-check",
-  "result": "compliant",
-  "proof": "0x0ab3c4d5e6f7...hex-encoded-proof...",
-  "generated_at": "2026-04-03T15:10:00.000Z",
-  "expires_at": "2026-04-10T15:10:00.000Z"
+  "result": {
+    "compliant": true,
+    "frameworks": ["AML/KYC", "SOC2"],
+    "generated_at": "2026-04-03T15:10:00.000Z"
+  },
+  "signature": "MEYCIQCv...base64..."
 }
 ```
 
-### Verify a Proof
+### Verify an Assertion
 
 **POST /v1/assertions/verify**
 
-Verifies a previously generated zero-knowledge proof. This endpoint can be called by any party that holds the proof, without needing to know the original private inputs.
+Verifies a previously generated assertion. This endpoint can be called by any party that holds the assertion result and signature, without needing to know the original private inputs.
 
 ```bash
 curl -X POST https://api.example.com/v1/assertions/verify \
   -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..." \
   -H "Content-Type: application/json" \
   -d '{
-    "proof_id": "prf_01HYX4ABCDEF123456789",
-    "proof": "0x03a1b2c3d4e5f6...hex-encoded-proof..."
+    "assertion_type": "proof-of-liabilities",
+    "result": {
+      "total_liabilities": "25000000.00",
+      "merkle_root": "sha256:4a7d1ed414474e4033ac29ccb8653d9b",
+      "generated_at": "2026-04-03T15:00:00.000Z"
+    },
+    "signature": "MEUCIBkL...base64..."
   }'
 ```
 
 #### Request Body
 
-| Field      | Type   | Required | Description                                         |
-|------------|--------|----------|-----------------------------------------------------|
-| `proof_id` | string | Yes      | The proof identifier returned by the assertion endpoint |
-| `proof`    | string | Yes      | The hex-encoded proof bytes to verify               |
+| Field            | Type   | Required | Description                                              |
+|------------------|--------|----------|----------------------------------------------------------|
+| `assertion_type` | string | Yes      | The type of assertion to verify                          |
+| `result`         | object | Yes      | The assertion result payload to verify                   |
+| `signature`      | string | Yes      | The signature to verify against the result               |
 
 #### Response (200 OK)
 
 ```json
 {
-  "proof_id": "prf_01HYX4ABCDEF123456789",
   "valid": true,
-  "type": "proof-of-liabilities",
   "verified_at": "2026-04-03T15:15:00.000Z"
 }
 ```
 
 #### Verification Failure Response (200 OK)
 
-When a proof is invalid or expired, the endpoint still returns 200 but with `valid: false`:
+When an assertion is invalid, the endpoint still returns 200 but with `valid: false`:
 
 ```json
 {
-  "proof_id": "prf_01HYX4ABCDEF123456789",
   "valid": false,
-  "type": "proof-of-liabilities",
-  "reason": "Proof has expired. Please request a new proof from the issuing party.",
+  "reason": "Signature verification failed.",
   "verified_at": "2026-04-11T10:00:00.000Z"
 }
 ```

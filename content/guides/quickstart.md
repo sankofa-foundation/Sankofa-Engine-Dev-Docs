@@ -76,12 +76,12 @@ curl -X POST https://api.example.com/v1/transactions \
   "txn_id": "txn_01HYX3KPVW9QDMZ6R8F5GT7N4E",
   "account_id": "alice@example.com",
   "status": "pending",
-  "shard_id": "shard-07",
+  "shard_id": 7,
   "enqueued_at": "2026-04-03T14:22:01.456Z"
 }
 ```
 
-**What's happening:** The API Gateway validates your request, computes a deterministic shard assignment using `FNV-1a(account_id) % shard_count`, and publishes the transaction to NATS JetStream. The `202 Accepted` status means the transaction has been enqueued for processing -- it has not been finalized yet. The `txn_id` is your handle for tracking it.
+**What's happening:** The API Gateway validates your request, computes a deterministic shard assignment using `FNV-1a(account_id) % shard_count`, and publishes the transaction to NATS JetStream. The `202 Accepted` status means the transaction has been enqueued for processing -- it has not been completed yet. The `txn_id` is your handle for tracking it.
 
 Save the `txn_id` for the next step:
 
@@ -95,7 +95,7 @@ Always include an `idempotency_key`. If a network failure causes you to retry th
 
 ## Step 3: Check Transaction Status
 
-Poll the transaction to watch it progress from `pending` to `finalized`.
+Poll the transaction to watch it progress from `pending` to `completed`.
 
 ```bash
 curl https://api.example.com/v1/transactions/$TXN_ID \
@@ -111,12 +111,12 @@ curl https://api.example.com/v1/transactions/$TXN_ID \
   "amount": "250.00",
   "type": "debit",
   "status": "pending",
-  "shard_id": "shard-07",
+  "shard_id": 7,
   "enqueued_at": "2026-04-03T14:22:01.456Z"
 }
 ```
 
-Wait a moment and poll again. **Response after finalization (200 OK):**
+Wait a moment and poll again. **Response after completion (200 OK):**
 
 ```json
 {
@@ -124,18 +124,17 @@ Wait a moment and poll again. **Response after finalization (200 OK):**
   "account_id": "alice@example.com",
   "amount": "250.00",
   "type": "debit",
-  "status": "finalized",
-  "shard_id": "shard-07",
+  "status": "completed",
+  "shard_id": 7,
   "group_id": "grp_01HYX3MQNW8RDAZ5T7F4HS6K3D",
   "token_id": "USD-COIN",
   "token_class": "fungible",
-  "enqueued_at": "2026-04-03T14:22:01.456Z",
-  "finalized_at": "2026-04-03T14:22:02.112Z",
+  "created_at": "2026-04-03T14:22:01.456Z",
   "audit_hash": "sha256:a3f8c2d1e9b04567890abcdef1234567890abcdef1234567890abcdef12345678"
 }
 ```
 
-**What's happening:** The Shard Worker picked up your transaction from the NATS queue, validated the balance, updated the in-memory ledger, extended the SHA-256 audit hash chain, signed an ECDSA receipt, and persisted the block to ScyllaDB. The `audit_hash` is the latest link in the account's tamper-evident hash chain.
+**What's happening:** The Shard Worker picked up your transaction from the NATS queue, validated the balance, updated the in-memory ledger, extended the SHA-256 audit hash chain, signed an ECDSA receipt, and persisted the block to ScyllaDB. The `audit_hash` is the latest link in the account's tamper-evident hash chain. The `created_at` timestamp records when the transaction was created.
 
 ## Step 4: Check Account Balance
 
