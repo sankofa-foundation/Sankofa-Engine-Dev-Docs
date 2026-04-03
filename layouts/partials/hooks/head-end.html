@@ -1,0 +1,9 @@
+{{ if .HasShortcode "swaggerui" }}
+<link rel="stylesheet" href="{{ "swagger-ui/swagger-ui.css" | relURL }}">
+<style>
+  /* Override Swagger UI to fit within Docsy layout */
+  #swagger-ui .topbar { display: none; }
+  #swagger-ui .swagger-ui .info { margin: 20px 0; }
+  #swagger-ui .swagger-ui .scheme-container { padding: 15px 0; }
+</style>
+{{ end }}

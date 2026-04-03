@@ -1,0 +1,27 @@
+<div id="swagger-ui"></div>
+<script src="{{ "swagger-ui/swagger-ui-bundle.js" | relURL }}"></script>
+<script src="{{ "swagger-ui/swagger-ui-standalone-preset.js" | relURL }}"></script>
+<script>
+window.onload = function() {
+  SwaggerUIBundle({
+    url: "{{ .Get "url" | default ("/openapi/openapi.yaml" | relURL) }}",
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout",
+    defaultModelsExpandDepth: 2,
+    defaultModelExpandDepth: 2,
+    docExpansion: "list",
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: false
+  });
+};
+</script>
