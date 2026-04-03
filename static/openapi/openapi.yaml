@@ -1,0 +1,1920 @@
+openapi: 3.0.3
+info:
+  title: Sankofa Engine API
+  version: v0.1.0-alpha
+  description: |
+    The Sankofa Engine is a privacy-preserving financial ledger designed for
+    multi-asset custody, compliance attestation, and auditable transaction
+    processing. It supports fungible tokens, NFT classes and instances,
+    cryptographic assertions, and shard-based ledger architecture.
+
+    **Key design decisions:**
+    - All monetary amounts are represented as strings to avoid IEEE 754
+      floating-point precision loss.
+    - Transactions are submitted asynchronously and assigned to shards.
+    - Self-custody is supported via ECDSA P-256 transaction signatures.
+  contact:
+    name: Sankofa Labs Inc.
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.example.com
+    description: Placeholder server
+
+tags:
+  - name: Health
+    description: Liveness and readiness probes.
+  - name: Transactions
+    description: Submit and query transactions.
+  - name: Accounts
+    description: Account state, balances, and NFT ownership.
+  - name: Fungible Tokens
+    description: Register and query fungible token definitions.
+  - name: NFT Classes
+    description: Register and query NFT class definitions.
+  - name: NFT Instances
+    description: Query NFT instances, history, and provenance.
+  - name: Assertions
+    description: Compliance proofs and verification.
+  - name: Attestations
+    description: Create and query attestation records.
+  - name: Ledger
+    description: Shard status and storage metrics.
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ---------------------------------------------------------------------------
+  # Health
+  # ---------------------------------------------------------------------------
+  /healthz/liveness:
+    get:
+      operationId: getLiveness
+      tags: [Health]
+      summary: Liveness probe
+      description: Returns 200 if the service process is running.
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: alive
+              example:
+                status: alive
+
+  /healthz/readiness:
+    get:
+      operationId: getReadiness
+      tags: [Health]
+      summary: Readiness probe
+      description: Returns 200 when all dependencies are healthy, or 503 with ProblemDetails.
+      security: []
+      responses:
+        "200":
+          description: Service is ready.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: boolean
+                    example: true
+                  dependencies:
+                    type: object
+                    additionalProperties:
+                      type: string
+              example:
+                ready: true
+                dependencies:
+                  database: healthy
+                  cache: healthy
+        "503":
+          description: Service is not ready.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                type: "https://api.example.com/problems/not-ready"
+                title: Service Unavailable
+                status: 503
+                detail: One or more dependencies are unhealthy.
+
+  # ---------------------------------------------------------------------------
+  # Transactions
+  # ---------------------------------------------------------------------------
+  /v1/transactions:
+    post:
+      operationId: createTransaction
+      tags: [Transactions]
+      summary: Submit a transaction
+      description: |
+        Asynchronously enqueues a new transaction. The transaction is validated,
+        assigned to a shard, and returned with status `pending`.
+      security:
+        - BearerAuth: []
+        - TransactionSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionRequest"
+            example:
+              account_id: "acc_29f3a1c8e04b"
+              amount: "250.00"
+              type: credit
+              signature: "MEUCIQDy8z...base64..."
+              idempotency_key: "idem_a7b3c9d1e5f2"
+      responses:
+        "202":
+          description: Transaction accepted and enqueued.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionAccepted"
+              example:
+                txn_id: "txn_8f14e45f"
+                account_id: "acc_29f3a1c8e04b"
+                status: pending
+                shard_id: 3
+                enqueued_at: "2026-04-03T12:00:00Z"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                type: "https://api.example.com/problems/validation-error"
+                title: Bad Request
+                status: 400
+                detail: "Field 'amount' must be a positive decimal string."
+                error_codes:
+                  - INVALID_AMOUNT
+        "409":
+          description: Duplicate idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                type: "https://api.example.com/problems/duplicate"
+                title: Conflict
+                status: 409
+                detail: "A transaction with idempotency key 'idem_a7b3c9d1e5f2' already exists."
+
+    get:
+      operationId: listTransactions
+      tags: [Transactions]
+      summary: List transactions
+      description: Returns a paginated list of transactions matching the given filters.
+      parameters:
+        - name: account_id
+          in: query
+          schema:
+            type: string
+          description: Filter by account ID.
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Inclusive start date-time.
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Inclusive end date-time.
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [debit, credit, transfer, exchange, mint, burn]
+          description: Filter by transaction type.
+        - name: token_id
+          in: query
+          schema:
+            type: string
+          description: Filter by token ID.
+        - name: token_class
+          in: query
+          schema:
+            type: string
+          description: Filter by token class.
+        - name: group_id
+          in: query
+          schema:
+            type: string
+          description: Filter by settlement group ID.
+        - name: amount_min
+          in: query
+          schema:
+            type: string
+          description: Minimum amount (inclusive). String to avoid IEEE 754 issues.
+        - name: amount_max
+          in: query
+          schema:
+            type: string
+          description: Maximum amount (inclusive). String to avoid IEEE 754 issues.
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed, failed]
+          description: Filter by transaction status.
+        - name: page_token
+          in: query
+          schema:
+            type: string
+          description: Cursor for the next page.
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Number of results per page.
+      responses:
+        "200":
+          description: Paginated list of transactions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+                  next_page_token:
+                    type: string
+                    description: Token to retrieve the next page, absent on the last page.
+              example:
+                items:
+                  - txn_id: "txn_8f14e45f"
+                    account_id: "acc_29f3a1c8e04b"
+                    amount: "250.00"
+                    type: credit
+                    status: completed
+                    signature: "MEUCIQDy8z...base64..."
+                    shard_id: 3
+                    idempotency_key: "idem_a7b3c9d1e5f2"
+                    created_at: "2026-04-03T12:00:00Z"
+                next_page_token: "eyJwYWdlIjoyfQ=="
+
+  /v1/transactions/{id}:
+    get:
+      operationId: getTransaction
+      tags: [Transactions]
+      summary: Get a transaction by ID
+      description: Returns the full transaction object.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID.
+      responses:
+        "200":
+          description: Transaction found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+              example:
+                txn_id: "txn_8f14e45f"
+                account_id: "acc_29f3a1c8e04b"
+                amount: "250.00"
+                type: credit
+                status: completed
+                signature: "MEUCIQDy8z...base64..."
+                shard_id: 3
+                idempotency_key: "idem_a7b3c9d1e5f2"
+                token_id: "tok_usd_01"
+                audit_hash: "sha256:abc123def456"
+                receipt_signature: "MEQCIG...base64..."
+                created_at: "2026-04-03T12:00:00Z"
+        "404":
+          description: Transaction not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+              example:
+                type: "https://api.example.com/problems/not-found"
+                title: Not Found
+                status: 404
+                detail: "Transaction 'txn_8f14e45f' does not exist."
+
+  /v1/transactions/group/{groupID}:
+    get:
+      operationId: getTransactionsByGroup
+      tags: [Transactions]
+      summary: Get transactions by settlement group
+      description: Returns all transactions belonging to the specified settlement group.
+      parameters:
+        - name: groupID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Settlement group ID (UUID).
+      responses:
+        "200":
+          description: Transactions in the group.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+              example:
+                items:
+                  - txn_id: "txn_8f14e45f"
+                    account_id: "acc_29f3a1c8e04b"
+                    amount: "250.00"
+                    type: credit
+                    status: completed
+                    signature: "MEUCIQDy8z...base64..."
+                    shard_id: 3
+                    idempotency_key: "idem_a7b3c9d1e5f2"
+                    group_id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    created_at: "2026-04-03T12:00:00Z"
+                  - txn_id: "txn_9a25f56g"
+                    account_id: "acc_11b2c3d4e56a"
+                    amount: "250.00"
+                    type: debit
+                    status: completed
+                    signature: "MEUCIBRx...base64..."
+                    shard_id: 3
+                    idempotency_key: "idem_b8c4d0e2f6g3"
+                    group_id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    created_at: "2026-04-03T12:00:00Z"
+        "404":
+          description: Group not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # Accounts
+  # ---------------------------------------------------------------------------
+  /v1/accounts/{id}/state:
+    get:
+      operationId: getAccountState
+      tags: [Accounts]
+      summary: Get account state
+      description: Returns the current cryptographic state summary for an account.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID.
+      responses:
+        "200":
+          description: Account state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountState"
+              example:
+                account_id: "acc_29f3a1c8e04b"
+                audit_hash: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                updated_at: "2026-04-03T11:59:00Z"
+        "404":
+          description: Account not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/accounts/{id}/balances:
+    get:
+      operationId: getAccountBalances
+      tags: [Accounts]
+      summary: List account balances
+      description: Returns all token balances held by the account.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID.
+      responses:
+        "200":
+          description: Array of token balances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TokenBalance"
+              example:
+                items:
+                  - token_id: "tok_usd_01"
+                    symbol: "USD"
+                    balance: "15420.75"
+                  - token_id: "tok_eur_01"
+                    symbol: "EUR"
+                    balance: "3200.00"
+        "404":
+          description: Account not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/accounts/{id}/balances/{tokenId}:
+    get:
+      operationId: getAccountTokenBalance
+      tags: [Accounts]
+      summary: Get a single token balance
+      description: Returns the balance of a specific token for the account.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID.
+        - name: tokenId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Token ID.
+      responses:
+        "200":
+          description: Token balance.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenBalance"
+              example:
+                token_id: "tok_usd_01"
+                symbol: "USD"
+                balance: "15420.75"
+        "404":
+          description: Account or token not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/accounts/{id}/nfts:
+    get:
+      operationId: getAccountNFTs
+      tags: [Accounts]
+      summary: List owned NFTs
+      description: Returns all NFT instances currently owned by the account.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID.
+      responses:
+        "200":
+          description: Owned NFT instances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NFTInstance"
+              example:
+                items:
+                  - class_id: "nftc_art_001"
+                    instance_id: "nfti_00042"
+                    owner_account: "acc_29f3a1c8e04b"
+                    metadata:
+                      title: "Sunset Over Accra"
+                      artist: "Kwame Asante"
+                    status: active
+                    minted_at: "2026-03-15T09:30:00Z"
+        "404":
+          description: Account not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # Fungible Tokens
+  # ---------------------------------------------------------------------------
+  /v1/fungible-tokens:
+    post:
+      operationId: createFungibleToken
+      tags: [Fungible Tokens]
+      summary: Register a fungible token
+      description: Creates a new fungible token definition on the ledger.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FungibleTokenRequest"
+            example:
+              symbol: "GHS"
+              decimals: 2
+              issuer: "acc_issuer_cedi"
+              total_supply: "1000000.00"
+      responses:
+        "201":
+          description: Token registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FungibleToken"
+              example:
+                id: "tok_ghs_01"
+                symbol: "GHS"
+                decimals: 2
+                issuer: "acc_issuer_cedi"
+                total_supply: "1000000.00"
+                status: active
+                created_at: "2026-04-03T12:00:00Z"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+    get:
+      operationId: listFungibleTokens
+      tags: [Fungible Tokens]
+      summary: List fungible tokens
+      description: Returns a paginated list of registered fungible token definitions.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, frozen, deprecated]
+          description: Filter by token status.
+        - name: page_token
+          in: query
+          schema:
+            type: string
+          description: Cursor for the next page.
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Number of results per page.
+      responses:
+        "200":
+          description: Paginated list of fungible tokens.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FungibleToken"
+                  next_page_token:
+                    type: string
+              example:
+                items:
+                  - id: "tok_usd_01"
+                    symbol: "USD"
+                    decimals: 2
+                    issuer: "acc_issuer_us"
+                    total_supply: "5000000.00"
+                    status: active
+                    created_at: "2026-01-15T08:00:00Z"
+                  - id: "tok_ghs_01"
+                    symbol: "GHS"
+                    decimals: 2
+                    issuer: "acc_issuer_cedi"
+                    total_supply: "1000000.00"
+                    status: active
+                    created_at: "2026-04-03T12:00:00Z"
+                next_page_token: null
+
+  /v1/fungible-tokens/{id}:
+    get:
+      operationId: getFungibleToken
+      tags: [Fungible Tokens]
+      summary: Get a fungible token by ID
+      description: Returns the full fungible token definition.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Fungible token ID.
+      responses:
+        "200":
+          description: Fungible token found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FungibleToken"
+              example:
+                id: "tok_usd_01"
+                symbol: "USD"
+                decimals: 2
+                issuer: "acc_issuer_us"
+                total_supply: "5000000.00"
+                status: active
+                created_at: "2026-01-15T08:00:00Z"
+        "404":
+          description: Token not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # NFT Classes
+  # ---------------------------------------------------------------------------
+  /v1/nft-classes:
+    post:
+      operationId: createNFTClass
+      tags: [NFT Classes]
+      summary: Register an NFT class
+      description: Creates a new NFT class definition with its metadata schema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NFTClassRequest"
+            example:
+              name: "West African Art Collection"
+              description: "Authenticated digital art from West African artists."
+              issuer: "acc_gallery_wa"
+              metadata_schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  artist:
+                    type: string
+                  year:
+                    type: integer
+                required:
+                  - title
+                  - artist
+      responses:
+        "201":
+          description: NFT class registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NFTClass"
+              example:
+                id: "nftc_art_001"
+                name: "West African Art Collection"
+                description: "Authenticated digital art from West African artists."
+                issuer: "acc_gallery_wa"
+                metadata_schema:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    artist:
+                      type: string
+                    year:
+                      type: integer
+                  required:
+                    - title
+                    - artist
+                status: active
+                created_at: "2026-04-03T12:05:00Z"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+    get:
+      operationId: listNFTClasses
+      tags: [NFT Classes]
+      summary: List NFT classes
+      description: Returns a paginated list of registered NFT class definitions.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active]
+          description: Filter by class status.
+        - name: page_token
+          in: query
+          schema:
+            type: string
+          description: Cursor for the next page.
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Number of results per page.
+      responses:
+        "200":
+          description: Paginated list of NFT classes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NFTClass"
+                  next_page_token:
+                    type: string
+              example:
+                items:
+                  - id: "nftc_art_001"
+                    name: "West African Art Collection"
+                    description: "Authenticated digital art from West African artists."
+                    issuer: "acc_gallery_wa"
+                    metadata_schema:
+                      type: object
+                    status: active
+                    created_at: "2026-04-03T12:05:00Z"
+                next_page_token: null
+
+  /v1/nft-classes/{id}:
+    get:
+      operationId: getNFTClass
+      tags: [NFT Classes]
+      summary: Get an NFT class by ID
+      description: Returns the full NFT class definition including its metadata schema.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT class ID.
+      responses:
+        "200":
+          description: NFT class found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NFTClass"
+              example:
+                id: "nftc_art_001"
+                name: "West African Art Collection"
+                description: "Authenticated digital art from West African artists."
+                issuer: "acc_gallery_wa"
+                metadata_schema:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    artist:
+                      type: string
+                    year:
+                      type: integer
+                  required:
+                    - title
+                    - artist
+                status: active
+                created_at: "2026-04-03T12:05:00Z"
+        "404":
+          description: NFT class not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # NFT Instances
+  # ---------------------------------------------------------------------------
+  /v1/nft-classes/{classId}/instances:
+    get:
+      operationId: listNFTInstances
+      tags: [NFT Instances]
+      summary: List instances of an NFT class
+      description: Returns all minted instances of the specified NFT class.
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT class ID.
+      responses:
+        "200":
+          description: NFT instances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NFTInstance"
+              example:
+                items:
+                  - class_id: "nftc_art_001"
+                    instance_id: "nfti_00042"
+                    owner_account: "acc_29f3a1c8e04b"
+                    metadata:
+                      title: "Sunset Over Accra"
+                      artist: "Kwame Asante"
+                      year: 2025
+                    status: active
+                    minted_at: "2026-03-15T09:30:00Z"
+                  - class_id: "nftc_art_001"
+                    instance_id: "nfti_00043"
+                    owner_account: "acc_11b2c3d4e56a"
+                    metadata:
+                      title: "Kente Patterns"
+                      artist: "Ama Darko"
+                      year: 2026
+                    status: active
+                    minted_at: "2026-03-20T14:00:00Z"
+        "404":
+          description: NFT class not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/nft-classes/{classId}/instances/{instanceId}:
+    get:
+      operationId: getNFTInstance
+      tags: [NFT Instances]
+      summary: Get an NFT instance
+      description: Returns the full NFT instance including its metadata.
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT class ID.
+        - name: instanceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT instance ID.
+      responses:
+        "200":
+          description: NFT instance found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NFTInstance"
+              example:
+                class_id: "nftc_art_001"
+                instance_id: "nfti_00042"
+                owner_account: "acc_29f3a1c8e04b"
+                metadata:
+                  title: "Sunset Over Accra"
+                  artist: "Kwame Asante"
+                  year: 2025
+                status: active
+                minted_at: "2026-03-15T09:30:00Z"
+        "404":
+          description: NFT instance not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/nft-classes/{classId}/instances/{instanceId}/history:
+    get:
+      operationId: getNFTInstanceHistory
+      tags: [NFT Instances]
+      summary: Get NFT instance transaction history
+      description: Returns the full transaction history for an NFT instance.
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT class ID.
+        - name: instanceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT instance ID.
+      responses:
+        "200":
+          description: Transaction history for the NFT instance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NFTHistoryEntry"
+              example:
+                items:
+                  - event: mint
+                    from_account: null
+                    to_account: "acc_29f3a1c8e04b"
+                    txn_id: "txn_mint_0042"
+                    timestamp: "2026-03-15T09:30:00Z"
+                  - event: transfer
+                    from_account: "acc_29f3a1c8e04b"
+                    to_account: "acc_11b2c3d4e56a"
+                    txn_id: "txn_xfer_0099"
+                    timestamp: "2026-03-28T16:45:00Z"
+        "404":
+          description: NFT instance not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/nft-classes/{classId}/instances/{instanceId}/provenance:
+    get:
+      operationId: getNFTInstanceProvenance
+      tags: [NFT Instances]
+      summary: Get NFT instance provenance chain
+      description: |
+        Returns the provenance chain for an NFT instance, tracing ownership
+        back to the original mint event up to `max_depth` hops.
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT class ID.
+        - name: instanceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: NFT instance ID.
+        - name: max_depth
+          in: query
+          schema:
+            type: string
+            default: "10"
+          description: Maximum depth of provenance chain to return.
+      responses:
+        "200":
+          description: Provenance chain.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  class_id:
+                    type: string
+                  instance_id:
+                    type: string
+                  chain:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ProvenanceEntry"
+              example:
+                class_id: "nftc_art_001"
+                instance_id: "nfti_00042"
+                chain:
+                  - depth: 0
+                    owner: "acc_11b2c3d4e56a"
+                    acquired_via: "txn_xfer_0099"
+                    timestamp: "2026-03-28T16:45:00Z"
+                  - depth: 1
+                    owner: "acc_29f3a1c8e04b"
+                    acquired_via: "txn_mint_0042"
+                    timestamp: "2026-03-15T09:30:00Z"
+        "404":
+          description: NFT instance not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # Assertions (Compliance)
+  # ---------------------------------------------------------------------------
+  /v1/assertions/proof-of-liabilities:
+    post:
+      operationId: proofOfLiabilities
+      tags: [Assertions]
+      summary: Generate proof of liabilities
+      description: Generates a cryptographic proof of liabilities for the requester.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssertionRequest"
+            example:
+              requester: "acc_auditor_01"
+      responses:
+        "200":
+          description: Proof of liabilities generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssertionResponse"
+              example:
+                assertion_type: proof-of-liabilities
+                requester: "acc_auditor_01"
+                result:
+                  total_liabilities: "25000000.00"
+                  merkle_root: "sha256:4a7d1ed414474e4033ac29ccb8653d9b"
+                  generated_at: "2026-04-03T12:10:00Z"
+                signature: "MEUCIBkL...base64..."
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/assertions/proof-of-provenance:
+    post:
+      operationId: proofOfProvenance
+      tags: [Assertions]
+      summary: Generate proof of provenance
+      description: Generates a cryptographic proof of asset provenance for the requester.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssertionRequest"
+            example:
+              requester: "acc_auditor_01"
+      responses:
+        "200":
+          description: Proof of provenance generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssertionResponse"
+              example:
+                assertion_type: proof-of-provenance
+                requester: "acc_auditor_01"
+                result:
+                  assets_verified: 142
+                  provenance_valid: true
+                  generated_at: "2026-04-03T12:11:00Z"
+                signature: "MEQCIF7x...base64..."
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/assertions/proof-of-compliance:
+    post:
+      operationId: proofOfCompliance
+      tags: [Assertions]
+      summary: Generate proof of compliance
+      description: Generates a cryptographic proof of regulatory compliance for the requester.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssertionRequest"
+            example:
+              requester: "acc_auditor_01"
+      responses:
+        "200":
+          description: Proof of compliance generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssertionResponse"
+              example:
+                assertion_type: proof-of-compliance
+                requester: "acc_auditor_01"
+                result:
+                  compliant: true
+                  frameworks:
+                    - "AML/KYC"
+                    - "SOC2"
+                  generated_at: "2026-04-03T12:12:00Z"
+                signature: "MEYCIQCv...base64..."
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/assertions/verify:
+    post:
+      operationId: verifyAssertion
+      tags: [Assertions]
+      summary: Verify an assertion
+      description: Verifies the cryptographic validity of a previously generated assertion.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyAssertionRequest"
+            example:
+              assertion_type: proof-of-liabilities
+              result:
+                total_liabilities: "25000000.00"
+                merkle_root: "sha256:4a7d1ed414474e4033ac29ccb8653d9b"
+                generated_at: "2026-04-03T12:10:00Z"
+              signature: "MEUCIBkL...base64..."
+      responses:
+        "200":
+          description: Verification result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  verified_at:
+                    type: string
+                    format: date-time
+              example:
+                valid: true
+                verified_at: "2026-04-03T12:15:00Z"
+        "400":
+          description: Invalid assertion payload.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # Attestations
+  # ---------------------------------------------------------------------------
+  /v1/attestations:
+    post:
+      operationId: createAttestation
+      tags: [Attestations]
+      summary: Create an attestation
+      description: Records a new attestation on the ledger.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttestationRequest"
+            example:
+              attester: "acc_auditor_01"
+              subject: "acc_29f3a1c8e04b"
+              claim_type: "solvency"
+              claim_data:
+                verified: true
+                as_of: "2026-04-03T00:00:00Z"
+              signature: "MEUCIQD...base64..."
+      responses:
+        "201":
+          description: Attestation created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attestation"
+              example:
+                id: "att_7c9e6f32"
+                attester: "acc_auditor_01"
+                subject: "acc_29f3a1c8e04b"
+                claim_type: "solvency"
+                claim_data:
+                  verified: true
+                  as_of: "2026-04-03T00:00:00Z"
+                signature: "MEUCIQD...base64..."
+                status: active
+                created_at: "2026-04-03T12:20:00Z"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+    get:
+      operationId: listAttestations
+      tags: [Attestations]
+      summary: List attestations
+      description: Returns a paginated list of attestation records.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter by attestation status.
+        - name: page_token
+          in: query
+          schema:
+            type: string
+          description: Cursor for the next page.
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Number of results per page.
+      responses:
+        "200":
+          description: Paginated list of attestations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Attestation"
+                  next_page_token:
+                    type: string
+              example:
+                items:
+                  - id: "att_7c9e6f32"
+                    attester: "acc_auditor_01"
+                    subject: "acc_29f3a1c8e04b"
+                    claim_type: "solvency"
+                    claim_data:
+                      verified: true
+                      as_of: "2026-04-03T00:00:00Z"
+                    signature: "MEUCIQD...base64..."
+                    status: active
+                    created_at: "2026-04-03T12:20:00Z"
+                next_page_token: null
+
+  /v1/attestations/{id}:
+    get:
+      operationId: getAttestation
+      tags: [Attestations]
+      summary: Get an attestation by ID
+      description: Returns the full attestation record.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Attestation ID.
+      responses:
+        "200":
+          description: Attestation found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attestation"
+              example:
+                id: "att_7c9e6f32"
+                attester: "acc_auditor_01"
+                subject: "acc_29f3a1c8e04b"
+                claim_type: "solvency"
+                claim_data:
+                  verified: true
+                  as_of: "2026-04-03T00:00:00Z"
+                signature: "MEUCIQD...base64..."
+                status: active
+                created_at: "2026-04-03T12:20:00Z"
+        "404":
+          description: Attestation not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  # ---------------------------------------------------------------------------
+  # Ledger / Monitoring
+  # ---------------------------------------------------------------------------
+  /v1/ledger/shards/{id}/status:
+    get:
+      operationId: getShardStatus
+      tags: [Ledger]
+      summary: Get shard status
+      description: Returns the health state and statistics for a specific ledger shard.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: uint32
+          description: Shard ID (uint32).
+      responses:
+        "200":
+          description: Shard status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerShard"
+              example:
+                id: 3
+                health_state: healthy
+                transaction_count: 148203
+                last_activity: "2026-04-03T12:00:00Z"
+        "404":
+          description: Shard not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /v1/storage/metrics:
+    get:
+      operationId: getStorageMetrics
+      tags: [Ledger]
+      summary: Get storage metrics
+      description: Returns current storage utilization and performance metrics.
+      responses:
+        "200":
+          description: Storage metrics.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageMetrics"
+              example:
+                total_shards: 16
+                total_transactions: 2371045
+                storage_bytes: 1073741824
+                avg_write_latency_ms: 2.4
+                avg_read_latency_ms: 0.8
+                measured_at: "2026-04-03T12:00:00Z"
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Standard HTTP Bearer authentication with a JWT token.
+        Header: `Authorization: Bearer <token>`
+
+    TransactionSignature:
+      type: apiKey
+      in: header
+      name: X-Transaction-Signature
+      description: |
+        ECDSA P-256 signature for self-custody transaction authorization.
+        The signature is also included in the transaction body's `signature` field.
+
+  schemas:
+    # -------------------------------------------------------------------------
+    # Transaction schemas
+    # -------------------------------------------------------------------------
+    TransactionRequest:
+      type: object
+      required:
+        - account_id
+        - amount
+        - type
+        - signature
+        - idempotency_key
+      properties:
+        account_id:
+          type: string
+          description: The account submitting the transaction.
+        amount:
+          type: string
+          description: >
+            Transaction amount as a decimal string. Must be a positive decimal
+            value. Represented as a string to avoid IEEE 754 floating-point
+            precision loss.
+        type:
+          type: string
+          enum: [debit, credit, transfer, exchange, mint, burn]
+          description: Transaction type.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature authorizing the transaction.
+        idempotency_key:
+          type: string
+          description: Client-generated unique key to prevent duplicate submissions.
+        group_id:
+          type: string
+          format: uuid
+          description: Optional settlement group ID.
+        token_id:
+          type: string
+          description: Optional token ID for token-specific transactions.
+        token_class:
+          type: string
+          description: Optional token class identifier.
+
+    TransactionAccepted:
+      type: object
+      properties:
+        txn_id:
+          type: string
+          description: Assigned transaction ID.
+        account_id:
+          type: string
+          description: The account that submitted the transaction.
+        status:
+          type: string
+          enum: [pending]
+          description: Initial status is always pending.
+        shard_id:
+          type: integer
+          format: uint32
+          description: The ledger shard to which the transaction was assigned.
+        enqueued_at:
+          type: string
+          format: date-time
+          description: Timestamp when the transaction was enqueued.
+
+    Transaction:
+      type: object
+      properties:
+        txn_id:
+          type: string
+          description: Unique transaction identifier.
+        account_id:
+          type: string
+          description: The account that submitted the transaction.
+        amount:
+          type: string
+          description: >
+            Transaction amount as a decimal string. Represented as a string to
+            avoid IEEE 754 floating-point precision loss.
+        type:
+          type: string
+          enum: [debit, credit, transfer, exchange, mint, burn]
+          description: Transaction type.
+        status:
+          type: string
+          enum: [pending, completed, failed]
+          description: Current transaction status.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature.
+        shard_id:
+          type: integer
+          format: uint32
+          description: The ledger shard handling this transaction.
+        idempotency_key:
+          type: string
+          description: Client-generated unique key.
+        group_id:
+          type: string
+          format: uuid
+          description: Settlement group ID, if applicable.
+        token_id:
+          type: string
+          description: Token ID, if applicable.
+        token_class:
+          type: string
+          description: Token class, if applicable.
+        audit_hash:
+          type: string
+          description: Cryptographic audit hash of the transaction.
+        receipt_signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER receipt signature from the ledger.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the transaction was created.
+
+    SignedReceipt:
+      type: object
+      properties:
+        group_id:
+          type: string
+          description: Settlement group ID.
+        account_id:
+          type: string
+          description: Account ID.
+        amount:
+          type: string
+          description: >
+            Transaction amount as a decimal string. Represented as a string to
+            avoid IEEE 754 floating-point precision loss.
+        type:
+          type: string
+          description: Transaction type.
+        audit_hash:
+          type: string
+          description: Cryptographic audit hash.
+        shard_id:
+          type: integer
+          format: uint32
+          description: Ledger shard ID.
+        timestamp:
+          type: integer
+          description: Unix epoch timestamp.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature.
+
+    # -------------------------------------------------------------------------
+    # Account schemas
+    # -------------------------------------------------------------------------
+    AccountState:
+      type: object
+      properties:
+        account_id:
+          type: string
+          description: Account identifier.
+        audit_hash:
+          type: string
+          description: Current cryptographic audit hash of the account state.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of last state update.
+
+    TokenBalance:
+      type: object
+      properties:
+        token_id:
+          type: string
+          description: Token identifier.
+        symbol:
+          type: string
+          description: Token symbol.
+        balance:
+          type: string
+          description: >
+            Current balance as a decimal string. Represented as a string to
+            avoid IEEE 754 floating-point precision loss.
+
+    # -------------------------------------------------------------------------
+    # Fungible Token schemas
+    # -------------------------------------------------------------------------
+    FungibleTokenRequest:
+      type: object
+      required:
+        - symbol
+        - decimals
+        - issuer
+      properties:
+        symbol:
+          type: string
+          description: Token ticker symbol.
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 18
+          description: Number of decimal places (0-18).
+        issuer:
+          type: string
+          description: Account ID of the token issuer.
+        total_supply:
+          type: string
+          description: >
+            Initial total supply as a non-negative decimal string. Represented
+            as a string to avoid IEEE 754 floating-point precision loss.
+
+    FungibleToken:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique token identifier.
+        symbol:
+          type: string
+          description: Token ticker symbol.
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 18
+          description: Number of decimal places (0-18).
+        issuer:
+          type: string
+          description: Account ID of the token issuer.
+        total_supply:
+          type: string
+          description: >
+            Total supply as a non-negative decimal string. Represented as a
+            string to avoid IEEE 754 floating-point precision loss.
+        status:
+          type: string
+          enum: [active, frozen, deprecated]
+          description: Token lifecycle status.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the token was registered.
+
+    # -------------------------------------------------------------------------
+    # NFT schemas
+    # -------------------------------------------------------------------------
+    NFTClassRequest:
+      type: object
+      required:
+        - name
+        - issuer
+        - metadata_schema
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the NFT class.
+        description:
+          type: string
+          description: Description of the NFT class.
+        issuer:
+          type: string
+          description: Account ID of the issuer.
+        metadata_schema:
+          type: object
+          description: JSON Schema defining the structure of instance metadata.
+
+    NFTClass:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique NFT class identifier.
+        name:
+          type: string
+          description: Human-readable name.
+        description:
+          type: string
+          description: Description of the NFT class.
+        issuer:
+          type: string
+          description: Account ID of the issuer.
+        metadata_schema:
+          type: object
+          description: JSON Schema defining the structure of instance metadata.
+        status:
+          type: string
+          enum: [active]
+          description: Class lifecycle status.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the class was registered.
+
+    NFTInstance:
+      type: object
+      properties:
+        class_id:
+          type: string
+          description: Parent NFT class identifier.
+        instance_id:
+          type: string
+          description: Unique instance identifier within the class.
+        owner_account:
+          type: string
+          description: Current owner's account ID.
+        metadata:
+          type: object
+          description: Instance metadata conforming to the class metadata schema.
+        status:
+          type: string
+          enum: [active, burned]
+          description: Instance lifecycle status.
+        minted_at:
+          type: string
+          format: date-time
+          description: Timestamp when the instance was minted.
+
+    NFTHistoryEntry:
+      type: object
+      properties:
+        event:
+          type: string
+          description: Type of event (e.g., mint, transfer, burn).
+        from_account:
+          type: string
+          nullable: true
+          description: Source account, null for mint events.
+        to_account:
+          type: string
+          description: Destination account.
+        txn_id:
+          type: string
+          description: Associated transaction ID.
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event occurred.
+
+    ProvenanceEntry:
+      type: object
+      properties:
+        depth:
+          type: integer
+          description: Depth in the provenance chain (0 = current owner).
+        owner:
+          type: string
+          description: Account ID of the owner at this depth.
+        acquired_via:
+          type: string
+          description: Transaction ID through which ownership was acquired.
+        timestamp:
+          type: string
+          format: date-time
+          description: When ownership was acquired.
+
+    # -------------------------------------------------------------------------
+    # Assertion schemas
+    # -------------------------------------------------------------------------
+    AssertionRequest:
+      type: object
+      required:
+        - requester
+      properties:
+        requester:
+          type: string
+          description: Account ID of the entity requesting the assertion.
+
+    AssertionResponse:
+      type: object
+      properties:
+        assertion_type:
+          type: string
+          description: Type of assertion generated.
+        requester:
+          type: string
+          description: Account ID of the requester.
+        result:
+          type: object
+          description: Assertion-specific result payload.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature over the result.
+
+    VerifyAssertionRequest:
+      type: object
+      properties:
+        assertion_type:
+          type: string
+          description: Type of assertion to verify.
+        result:
+          type: object
+          description: The assertion result payload to verify.
+        signature:
+          type: string
+          description: The signature to verify against the result.
+
+    # -------------------------------------------------------------------------
+    # Attestation schemas
+    # -------------------------------------------------------------------------
+    AttestationRequest:
+      type: object
+      required:
+        - attester
+        - subject
+        - claim_type
+        - claim_data
+        - signature
+      properties:
+        attester:
+          type: string
+          description: Account ID of the attesting party.
+        subject:
+          type: string
+          description: Account ID of the subject being attested.
+        claim_type:
+          type: string
+          description: Type of claim (e.g., solvency, identity, compliance).
+        claim_data:
+          type: object
+          description: Structured claim data.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature over the claim.
+
+    Attestation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique attestation identifier.
+        attester:
+          type: string
+          description: Account ID of the attesting party.
+        subject:
+          type: string
+          description: Account ID of the subject.
+        claim_type:
+          type: string
+          description: Type of claim.
+        claim_data:
+          type: object
+          description: Structured claim data.
+        signature:
+          type: string
+          description: Base64-encoded ECDSA P-256 DER signature.
+        status:
+          type: string
+          description: Attestation status.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the attestation was created.
+
+    # -------------------------------------------------------------------------
+    # Ledger schemas
+    # -------------------------------------------------------------------------
+    LedgerShard:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+          description: Shard identifier.
+        health_state:
+          type: string
+          enum: [healthy, degraded, offline]
+          description: Current health state of the shard.
+        transaction_count:
+          type: integer
+          description: Total number of transactions processed by this shard.
+        last_activity:
+          type: string
+          format: date-time
+          description: Timestamp of the last transaction on this shard.
+
+    StorageMetrics:
+      type: object
+      properties:
+        total_shards:
+          type: integer
+          description: Number of active ledger shards.
+        total_transactions:
+          type: integer
+          description: Total transactions across all shards.
+        storage_bytes:
+          type: integer
+          format: int64
+          description: Total storage consumed in bytes.
+        avg_write_latency_ms:
+          type: number
+          format: double
+          description: Average write latency in milliseconds.
+        avg_read_latency_ms:
+          type: number
+          format: double
+          description: Average read latency in milliseconds.
+        measured_at:
+          type: string
+          format: date-time
+          description: Timestamp when metrics were sampled.
+
+    # -------------------------------------------------------------------------
+    # Error schema (RFC 7807)
+    # -------------------------------------------------------------------------
+    ProblemDetails:
+      type: object
+      description: >
+        Error response following RFC 7807 Problem Details for HTTP APIs.
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference identifying the problem type.
+        title:
+          type: string
+          description: Short human-readable summary of the problem.
+        status:
+          type: integer
+          description: HTTP status code.
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence.
+        error_codes:
+          type: array
+          items:
+            type: string
+          description: Optional machine-readable error codes.
