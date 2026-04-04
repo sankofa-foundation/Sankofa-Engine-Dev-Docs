@@ -1,6 +1,7 @@
 ---
 title: "Security & Compliance"
 linkTitle: "Security"
+type: docs
 weight: 50
 description: >
   Security controls, encryption, access control, audit logging, and data residency. Mapped to SOC 2 Trust Service Criteria.

@@ -1,6 +1,7 @@
 ---
 title: "Support"
 linkTitle: "Support"
+type: docs
 weight: 70
 description: >
   Contact Sankofa Labs for support, issues, and questions.

@@ -1,6 +1,7 @@
 ---
 title: "API Reference"
 linkTitle: "API Reference"
+type: docs
 weight: 20
 description: >
   Complete REST API documentation with interactive Swagger UI, authentication guides, and endpoint references.
