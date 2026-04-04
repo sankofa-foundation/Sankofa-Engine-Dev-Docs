@@ -4,7 +4,7 @@
 <script>
 window.onload = function() {
   SwaggerUIBundle({
-    url: "{{ .Get "url" | default ("/openapi/openapi.yaml" | relURL) }}",
+    url: "{{ with .Get "url" }}{{ . }}{{ else }}{{ "openapi/openapi.yaml" | relURL }}{{ end }}",
     dom_id: '#swagger-ui',
     deepLinking: true,
     presets: [
