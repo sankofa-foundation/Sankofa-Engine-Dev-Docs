@@ -1,7 +1,7 @@
 ---
 title: "Sankofa Engine"
 linkTitle: "Sankofa Engine"
-type: docs
+type: default
 ---
 
 {{% blocks/cover title="Sankofa Engine" image_anchor="top" height="med" color="primary" %}}
