@@ -1,0 +1,63 @@
+// Custom styles for Sankofa Engine docs
+// Compact, developer-friendly density
+
+// Compact, dense tables
+.td-content table:not(.swagger-ui table) {
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+
+  th, td {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    vertical-align: top;
+  }
+
+  // Give description columns more room
+  th:last-child, td:last-child {
+    width: 50%;
+  }
+
+  code {
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+}
+
+// Allow tables to scroll horizontally on small screens
+.td-content .table-responsive {
+  overflow-x: auto;
+}
+
+// Reduce spacing between content sections
+.td-content {
+  h2 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h3 {
+    margin-top: 1.25rem;
+    margin-bottom: 0.4rem;
+  }
+
+  p {
+    margin-bottom: 0.6rem;
+  }
+
+  // Tighter list spacing
+  ul, ol {
+    margin-bottom: 0.6rem;
+
+    li {
+      margin-bottom: 0.15rem;
+    }
+  }
+
+  // Compact code blocks
+  pre {
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 0.8rem;
+  }
+}
