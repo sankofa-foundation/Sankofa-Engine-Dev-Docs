@@ -37,16 +37,21 @@ The Sankofa Engine returns errors using the **RFC 7807 Problem Details** format.
 | Code | HTTP Status | Description |
 |---|---|---|
 | `ERR_NOT_FOUND` | 404 | Resource not found |
+| `ERR_CONFLICT` | 409 | Resource already exists (e.g., duplicate NFT mint, duplicate token symbol) |
+| `ERR_PAYLOAD_TOO_LARGE` | 413 | Request body exceeds the 1 MB limit |
+| `ERR_UNSUPPORTED_CONTENT_TYPE` | 415 | Request must use `Content-Type: application/json` |
+| `ERR_SHARD_UNAVAILABLE` | 503 | Shard ownership in flux — retry with backoff |
+| `ERR_DOWNSTREAM_FAILURE` | 503 | An internal dependency is temporarily unavailable |
 
 ### Transaction Validation
 
 | Code | HTTP Status | Description |
 |---|---|---|
-| `ERR_INVALID_ACCOUNT_ID` | 400 | Account ID is required |
-| `ERR_INVALID_AMOUNT` | 400 | Amount is required and must be a valid positive decimal number |
+| `ERR_INVALID_ACCOUNT_ID` | 400 | Account ID is missing or invalid. Must be ASCII-only, max 128 characters, allowed: `a-zA-Z0-9_.-:` |
+| `ERR_INVALID_AMOUNT` | 400 | Amount is required and must be a valid positive decimal (max 18 integer + 18 decimal digits) |
 | `ERR_INVALID_TYPE` | 400 | Transaction type is required and must be a valid enum value (`debit`, `credit`, `transfer`, `exchange`, `mint`, `burn`) |
 | `ERR_INVALID_SIGNATURE` | 400 | Signature is required |
-| `ERR_INVALID_IDEMPOTENCY_KEY` | 400 | Idempotency key is required |
+| `ERR_INVALID_IDEMPOTENCY_KEY` | 400 | Idempotency key is required for all transaction submissions |
 | `ERR_INVALID_GROUP_ID` | 400 | Group ID must be a valid UUID |
 | `ERR_SELF_TRANSFER` | 400 | Cannot transfer to the same account |
 
@@ -103,7 +108,10 @@ Check the HTTP status code to determine the general category of the error:
 
 - **400** -- Client error. The request is malformed or contains invalid data. Fix the request and retry.
 - **404** -- The requested resource does not exist. Verify the identifier.
-- **503** -- The service is temporarily unavailable (e.g., no healthy shards). Retry with exponential backoff.
+- **409** -- Conflict. The resource already exists (e.g., duplicate NFT mint or token symbol). Do not retry.
+- **413** -- Payload too large. The request body exceeds the 1 MB limit. Reduce the payload size.
+- **415** -- Unsupported media type. The request must use `Content-Type: application/json`.
+- **503** -- The service is temporarily unavailable (e.g., no healthy shards, shard ownership in flux). Retry with exponential backoff.
 
 ### Use `error_codes` for Programmatic Handling
 

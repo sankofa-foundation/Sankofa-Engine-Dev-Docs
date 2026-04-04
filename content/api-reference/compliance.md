@@ -259,6 +259,16 @@ curl "https://api.example.com/v1/attestations?subject_class=carbon-credits-2026&
   -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..."
 ```
 
+#### Query Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `subject_class` | string | Filter by NFT class ID |
+| `subject_instance` | string | Filter by NFT instance ID |
+| `asset_class` | string | Filter by asset class |
+| `source` | string | Filter by attester/source |
+| `status` | string | Filter by attestation status |
+
 #### Response (200 OK)
 
 ```json

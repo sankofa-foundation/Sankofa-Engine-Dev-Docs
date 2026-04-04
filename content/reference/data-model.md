@@ -14,8 +14,8 @@ The central entity in the Sankofa Engine. Represents any ledger operation -- deb
 
 | Field | Type | Description |
 |---|---|---|
-| `account_id` | string | Account identifier |
-| `amount` | string | Transaction amount (string, not float -- see [Amounts as Strings](#amounts-as-strings)) |
+| `account_id` | string | Account identifier. ASCII-only, max 128 characters, allowed: `a-zA-Z0-9_.-:` |
+| `amount` | string | Transaction amount (string, not float -- see [Amounts as Strings](#amounts-as-strings)). Max 18 integer + 18 decimal digits. |
 | `type` | enum | Transaction type: `debit`, `credit`, `transfer`, `exchange`, `mint`, `burn` |
 | `status` | enum | Processing status: `pending`, `completed`, `failed` |
 | `signature` | string | ECDSA P-256 signature from the submitting client |
@@ -104,7 +104,7 @@ This approach ensures that all transactions for a given account are routed to th
 
 ### Idempotency
 
-Every transaction submission includes a client-provided `idempotency_key`. If a duplicate key is received, the engine returns the original receipt without reprocessing. This key is also used as the NATS `Nats-Msg-Id` header, leveraging NATS JetStream's built-in server-side deduplication window.
+Every transaction submission **must** include a client-provided `idempotency_key`. If a duplicate key is received, the engine returns the original receipt without reprocessing. This key is also used as the NATS `Nats-Msg-Id` header, leveraging NATS JetStream's built-in server-side deduplication window.
 
 ### Audit Hash Chain
 

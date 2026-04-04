@@ -104,12 +104,14 @@ The Compliance Service generates and verifies zero-knowledge proofs that allow t
 | **Replicas** | 1 |
 | **Dependencies** | NATS |
 
-The Settlement Service handles the finalization of transaction batches and coordinates settlement with external systems.
+The Settlement Service coordinates multi-leg (compound) transactions and handles settlement finalization.
 
 **Key Responsibilities:**
 
-- Settlement batch processing — aggregates confirmed transactions into settlement batches
-- Finality confirmation — marks batches as settled and publishes settlement events to NATS for downstream consumers
+- Compound transaction registration — tracks all legs of a multi-leg transaction by `group_id`
+- Receipt tracking — records signed receipts for each leg, with deduplication to prevent double-counting
+- Settlement finalization — marks the group as settled once all expected legs have completed
+- Partial revert — if a compound transaction must be rolled back, the service publishes compensating transactions for each completed leg. Compensation continues even if some legs fail to revert, and the group is marked `reverted` with a partial-failure report.
 
 ## Archival Service
 
@@ -134,6 +136,6 @@ All services expose health endpoints on **port 9090**:
 | Endpoint | Purpose |
 |---|---|
 | `/healthz/liveness` | Indicates the process is running and not deadlocked. Used by Kubernetes liveness probes to restart unhealthy pods. |
-| `/healthz/readiness` | Indicates the service is ready to accept traffic. Readiness checks verify downstream dependencies (e.g., ScyllaDB connectivity for Shard Workers, PostgreSQL connectivity for the Projection Service, NATS connectivity for all services). |
+| `/healthz/readiness` | Indicates the service is ready to accept traffic. Readiness checks verify downstream dependencies: ScyllaDB connectivity for Shard Workers, PostgreSQL connectivity for the Projection Service, and NATS connectivity for all services. The NATS health check verifies active connection status and reports `unhealthy` during disconnection periods. |
 
 Kubernetes probes are configured with appropriate thresholds so that a transiently unavailable dependency triggers traffic removal (readiness failure) before pod restart (liveness failure), preventing cascading restarts during brief infrastructure blips.

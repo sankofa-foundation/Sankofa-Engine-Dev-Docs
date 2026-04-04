@@ -140,6 +140,10 @@ curl https://api.example.com/v1/fungible-tokens/USD-COIN \
 
 NFTs in the Sankofa Engine are organized into **classes** (templates that define the schema and metadata structure) and **instances** (individual items minted from a class).
 
+{{% alert title="Idempotent Minting" color="info" %}}
+NFT instance minting is idempotent. Attempting to mint an instance with a `class_id` and `instance_id` that already exists returns a **409 Conflict** error. Duplicate NFT class registrations with the same `name` also return 409.
+{{% /alert %}}
+
 ### Register an NFT Class
 
 **POST /v1/nft-classes**

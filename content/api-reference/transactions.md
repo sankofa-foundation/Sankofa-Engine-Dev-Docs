@@ -11,7 +11,11 @@ The Transactions API lets you submit financial operations (debits, credits, tran
 For interactive exploration, see the [API Explorer](/api-reference/swagger/).
 
 {{% alert title="Important" color="warning" %}}
-All monetary amounts are represented as **strings**, not numbers. This avoids IEEE 754 floating-point precision issues. For example, use `"100.00"` instead of `100.00`.
+All monetary amounts are represented as **strings**, not numbers. This avoids IEEE 754 floating-point precision issues. For example, use `"100.00"` instead of `100.00`. Amounts are limited to 18 integer digits and 18 decimal digits.
+{{% /alert %}}
+
+{{% alert title="Request Limits" color="info" %}}
+All `POST` requests must include the `Content-Type: application/json` header. The maximum request body size is **1 MB**.
 {{% /alert %}}
 
 ## Transaction Types
@@ -74,13 +78,13 @@ curl -X POST https://api.example.com/v1/transactions \
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `account_id` | string | Yes | The account identifier |
-| `amount` | string | Yes | Positive decimal amount as a string (e.g., `"250.00"`) |
+| `account_id` | string | Yes | The account identifier. Must be ASCII-only, max 128 characters, allowed characters: `a-zA-Z0-9_.-:` |
+| `amount` | string | Yes | Positive decimal amount as a string (e.g., `"250.00"`). Max 18 integer digits, 18 decimal digits. |
 | `type` | enum | Yes | One of: `debit`, `credit`, `transfer`, `exchange`, `mint`, `burn` |
 | `token_id` | string | No | Fungible token identifier (e.g., `"USD"`, `"EUR"`). References a registered token. |
 | `group_id` | string | No | UUID linking multiple transaction legs together for settlement. Required for multi-leg transfers. |
 | `signature` | string | Yes | ECDSA P-256 signature of the canonical payload (see [Authentication](/api-reference/authentication/)) |
-| `idempotency_key` | string | No | Client-generated unique key to prevent duplicate processing (recommended) |
+| `idempotency_key` | string | Yes | Client-generated unique key to prevent duplicate processing |
 
 ### Response (202 Accepted)
 
@@ -104,7 +108,7 @@ curl -X POST https://api.example.com/v1/transactions \
 
 ### Idempotency
 
-Including an `idempotency_key` is strongly recommended. If you submit a transaction with the same key as a previous request, the engine returns the original receipt without re-processing. This makes retries safe across network failures.
+The `idempotency_key` field is **required** on all transaction submissions. If you submit a transaction with the same key as a previous request, the engine returns the original receipt without re-processing. This makes retries safe across network failures.
 
 ### Error Response (400 Bad Request)
 
@@ -178,18 +182,20 @@ curl "https://api.example.com/v1/transactions?account_id=alice@example.com&token
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `account_id` | string | — | Filter by account identifier |
-| `date_from` | string | — | ISO 8601 start date (inclusive) |
-| `date_to` | string | — | ISO 8601 end date (exclusive) |
+| `account_id` | string | — | Filter by account identifier. Must match account ID format (ASCII, max 128 chars). |
+| `date_from` | string | — | Start date (inclusive). Must be RFC 3339 format (e.g., `2026-04-01T00:00:00Z`). |
+| `date_to` | string | — | End date (exclusive). Must be RFC 3339 format. |
 | `type` | enum | — | Filter by transaction type |
 | `token_id` | string | — | Filter by fungible token identifier |
 | `token_class` | string | — | Filter by token class |
 | `group_id` | string | — | Filter by settlement group ID |
-| `amount_min` | string | — | Minimum amount (inclusive) |
-| `amount_max` | string | — | Maximum amount (inclusive) |
+| `amount_min` | string | — | Minimum amount (inclusive). Must be a valid decimal string. |
+| `amount_max` | string | — | Maximum amount (inclusive). Must be a valid decimal string. |
 | `status` | enum | — | Filter by status (`pending`, `completed`, `failed`) |
-| `page_token` | string | — | Cursor for the next page of results |
+| `page_token` | string | — | Cursor for the next page of results (max 512 characters) |
 | `page_size` | int | 100 | Number of results per page (max 1000) |
+
+All query parameters are validated server-side. Invalid formats (e.g., non-RFC 3339 dates, non-decimal amounts, or oversized page tokens) return a **400 Bad Request** error.
 
 ### Response (200 OK)
 

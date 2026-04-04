@@ -8,6 +8,10 @@ description: >
 
 The Accounts API provides read-only access to account state, token balances, and NFT ownership. These endpoints are served from a PostgreSQL projection layer, which means they are fast but eventually consistent with the underlying ledger.
 
+### Account ID Format
+
+Account identifiers must be ASCII-only, at most 128 characters, and may only contain: `a-zA-Z0-9_.-:`. Requests with invalid account IDs are rejected with a **400 Bad Request** error.
+
 For interactive exploration, see the [API Explorer](/api-reference/swagger/).
 
 ## Get Account State
@@ -39,6 +43,8 @@ curl https://api.example.com/v1/accounts/alice@example.com/state \
 
 ### Error Response (404 Not Found)
 
+Returned when the account does not exist on any shard.
+
 ```json
 {
   "type": "https://api.example.com/errors/not-found",
@@ -46,6 +52,19 @@ curl https://api.example.com/v1/accounts/alice@example.com/state \
   "status": 404,
   "detail": "Account 'unknown@example.com' does not exist.",
   "instance": "/v1/accounts/unknown@example.com/state"
+}
+```
+
+### Error Response (503 Service Unavailable)
+
+Returned when the shard that owns this account is temporarily unavailable (e.g., during shard rebalancing or ownership transfer). Retry with exponential backoff.
+
+```json
+{
+  "type": "https://api.sankofa.engine/errors/shard-unavailable",
+  "title": "Service Unavailable",
+  "status": 503,
+  "detail": "shard not available after retry (ownership in flux)"
 }
 ```
 
