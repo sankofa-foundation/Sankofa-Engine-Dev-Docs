@@ -1,4 +1,4 @@
-baseURL = "https://sankofa-foundation.github.io/Sankofa-Engine-Dev-Docs/"
+baseURL = "https://docs.sankofa.foundation/"
 title = "Sankofa Engine Documentation"
 contentDir = "content"
 defaultContentLanguage = "en"
@@ -38,7 +38,7 @@ defaultContentLanguageInSubdir = false
   version = "v0.1.0-alpha"
   archived_version = false
   version_menu = "Versions"
-  url_latest_version = "https://sankofa-foundation.github.io/Sankofa-Engine-Dev-Docs/"
+  url_latest_version = "https://docs.sankofa.foundation/"
   offlineSearch = true
   prism_syntax_highlighting = false
 
