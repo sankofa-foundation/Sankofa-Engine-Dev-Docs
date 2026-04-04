@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Guides on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/guides/</link><description>Recent content in Guides on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/guides/index.xml" rel="self" type="application/rss+xml"/><item><title>Quickstart</title><link>https://docs.sankofa.foundation/guides/quickstart/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/quickstart/</guid><description>&lt;p>This guide walks you through a complete first integration with the Sankofa Engine API. You will authenticate, deposit funds into an account, transfer between accounts, and query balances.&lt;/p>
+&lt;h2 id="prerequisites">Prerequisites&lt;/h2>
+&lt;p>Before you begin, you need:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>API credentials&lt;/strong> from Sankofa Labs: a &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> provisioned during onboarding.&lt;/li>
+&lt;li>&lt;strong>curl&lt;/strong> (or any HTTP client) installed on your machine.&lt;/li>
+&lt;li>&lt;strong>Test accounts&lt;/strong> set up in the Sankofa Engine with a registered fungible token (your onboarding contact will provide these).&lt;/li>
+&lt;/ul>
+
+
+&lt;div class="alert alert-info" role="alert">
+&lt;h4 class="alert-heading">Sandbox Environment&lt;/h4>
+
+ During development, use the sandbox base URL &lt;code>https://sandbox.api.example.com&lt;/code>. All examples in this guide use &lt;code>https://api.example.com&lt;/code> — replace this with your environment&amp;rsquo;s base URL.
+
+&lt;/div>
+
+&lt;h2 id="step-1-authenticate">Step 1: Authenticate&lt;/h2>
+&lt;p>Exchange your client credentials for a JWT access token.&lt;/p></description></item><item><title>Transaction Flow</title><link>https://docs.sankofa.foundation/guides/transaction-flow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/transaction-flow/</guid><description>&lt;p>This guide walks through the complete lifecycle of a transaction in the Sankofa Engine, from the moment a client submits it to the point where the finalized receipt is available for query. Understanding this flow is essential for building reliable integrations, debugging processing delays, and reasoning about failure scenarios.&lt;/p>
+&lt;h2 id="overview">Overview&lt;/h2>
+&lt;p>Every transaction passes through seven stages:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-text" data-lang="text">&lt;span style="display:flex;">&lt;span> Client API Gateway NATS JetStream Shard Worker
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ POST /v1/transactions│ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │──────────────────────►│ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ validate, auth, │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ compute shard │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ 202 Accepted │ publish to │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │◄──────────────────────│ LEDGER.shard-{N} │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │──────────────────────►│ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ deliver to worker │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │──────────────────────►│
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ validate balance
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ update in-memory
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ extend hash chain
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ sign receipt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ write ScyllaDB
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │◄──────────────────────│ ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ Projection Service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │──────────────────────►│
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ receipt event │ update PostgreSQL
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ GET /v1/transactions/{txn_id} │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │──────────────────────►│ query projection │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ 200 OK (finalized) │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │◄──────────────────────│ │ │
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="stage-1-client-submit">Stage 1: Client Submit&lt;/h2>
+&lt;p>The client sends a &lt;code>POST /v1/transactions&lt;/code> request to the API Gateway.&lt;/p></description></item><item><title>Self-Custody Signing</title><link>https://docs.sankofa.foundation/guides/self-custody/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/self-custody/</guid><description>&lt;p>This guide explains the self-custody signing model and walks through generating a keypair, signing transactions, and verifying receipts in Go, Python, and JavaScript.&lt;/p>
+&lt;h2 id="overview">Overview&lt;/h2>
+&lt;p>In the self-custody model, the account holder controls the signing key. Instead of delegating transaction authorization to Sankofa Labs, each transaction is signed with the account&amp;rsquo;s own ECDSA P-256 private key before submission. The engine verifies the signature against the public key registered during account setup.&lt;/p></description></item><item><title>NFT Lifecycle</title><link>https://docs.sankofa.foundation/guides/nft-lifecycle/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/nft-lifecycle/</guid><description>&lt;p>This guide walks through the complete lifecycle of a non-fungible token (NFT) in the Sankofa Engine: defining a class, minting instances, transferring ownership, querying provenance, and burning instances.&lt;/p>
+&lt;p>NFTs in the Sankofa Engine are organized into &lt;strong>classes&lt;/strong> and &lt;strong>instances&lt;/strong>. A class defines the schema and metadata structure (like a template), while instances are individual items minted from that class. Each instance has a unique owner and a full provenance chain tracked on the ledger.&lt;/p></description></item><item><title>Compliance Proofs</title><link>https://docs.sankofa.foundation/guides/compliance-proofs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/compliance-proofs/</guid><description>&lt;p>This guide covers generating and verifying zero-knowledge proofs (ZKPs) with the Sankofa Engine&amp;rsquo;s Compliance API. ZKPs enable privacy-preserving audits &amp;ndash; you can demonstrate regulatory compliance without disclosing sensitive ledger data.&lt;/p>
+&lt;h2 id="what-are-zero-knowledge-proofs">What Are Zero-Knowledge Proofs?&lt;/h2>
+&lt;p>A zero-knowledge proof is a cryptographic protocol that lets one party (the prover) convince another party (the verifier) that a statement is true, without revealing any information beyond the truth of the statement itself. The verifier learns nothing about the underlying data &amp;ndash; only that the claim is valid.&lt;/p></description></item></channel></rss>

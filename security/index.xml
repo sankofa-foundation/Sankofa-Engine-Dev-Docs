@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security &amp; Compliance on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/security/</link><description>Recent content in Security &amp; Compliance on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/security/index.xml" rel="self" type="application/rss+xml"/><item><title>Security Controls</title><link>https://docs.sankofa.foundation/security/controls/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/controls/</guid><description>&lt;p>This page inventories the security controls implemented in the Sankofa Engine, organized by SOC 2 Trust Service Categories. Each control includes an ID, description, implementation details, and the evidence an auditor would examine to verify the control is operating effectively.&lt;/p>
+&lt;h2 id="cc6--logical-and-physical-access-controls">CC6 — Logical and Physical Access Controls&lt;/h2>
+&lt;h3 id="cc61--user-authentication">CC6.1 — User Authentication&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system authenticates users and services before granting access to protected resources.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>JWT-based authentication with configurable token lifetime. API keys are provisioned by Sankofa Labs during customer onboarding. Clients exchange &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> for a JWT bearer token via the &lt;code>/auth/token&lt;/code> endpoint. Token lifetimes are configurable per deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>JWT validation middleware source code; token lifetime configuration values; API key provisioning records maintained by Sankofa Labs; authentication failure logs showing rejected requests.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc62--encryption-of-data-in-transit">CC6.2 — Encryption of Data in Transit&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system protects data in transit using encryption between all components.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Mutual TLS (mTLS) is enforced between all internal services (API Gateway ↔ NATS JetStream, Shard Workers ↔ NATS JetStream, API Gateway ↔ ScyllaDB, etc.). TLS 1.2+ is required for client-to-API Gateway communication. Certificate management uses a &lt;code>CertificateManager&lt;/code> interface that supports file watching and automatic reload on rotation.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>TLS configuration in service manifests; mTLS certificate chain; &lt;code>CertificateManager&lt;/code> source code showing file-watch and auto-reload logic; network policy definitions requiring encrypted transport; TLS handshake logs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc63--role-based-authorization">CC6.3 — Role-Based Authorization&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system restricts access to resources based on assigned roles and permissions.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Casbin v2 RBAC engine with policy-based authorization. Policies define subject (role or user), object (resource), and action (operation). Authorization is enforced at the API Gateway middleware layer before requests reach backend services. Role definitions are maintained in policy files and loaded at startup.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Casbin policy files defining roles and permissions; middleware source code enforcing authorization checks; authorization denial logs; role assignment records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc64--infrastructure-access-restrictions">CC6.4 — Infrastructure Access Restrictions&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Infrastructure-level access is restricted to authorized services and personnel.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes RBAC controls access to cluster resources. All Sankofa Engine components run in an isolated &lt;code>sankofa-engine&lt;/code> namespace. Kubernetes NetworkPolicies restrict pod-to-pod communication to only the required paths (e.g., shard workers may communicate with NATS and ScyllaDB but not directly with the API Gateway).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes RBAC role and role-binding manifests; namespace configuration; NetworkPolicy manifests; &lt;code>kubectl&lt;/code> output showing effective policies; cluster audit logs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc65--api-key-lifecycle-management">CC6.5 — API Key Lifecycle Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.5&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>API keys are managed through a defined lifecycle including provisioning, rotation, and revocation.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>API keys are provisioned by Sankofa Labs during customer onboarding. Key rotation is supported without downtime — new keys can be issued while old keys remain valid during a configurable grace period. Revocation is immediate upon request. All key lifecycle events are logged.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>API key provisioning procedures; key rotation records; revocation logs; key lifecycle event audit trail maintained by Sankofa Labs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc7--system-operations">CC7 — System Operations&lt;/h2>
+&lt;h3 id="cc71--health-monitoring-and-availability">CC7.1 — Health Monitoring and Availability&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system is monitored for availability and automatically scales to meet demand.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes liveness and readiness probes on port 9090 for all services. Horizontal Pod Autoscaler (HPA) automatically scales shard workers based on CPU and memory utilization. Health endpoints expose service status, connection state, and dependency health.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes deployment manifests showing probe configuration; HPA configuration and scaling event logs; health endpoint responses; uptime monitoring records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc72--event-durability-and-retention">CC7.2 — Event Durability and Retention&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>System events are durably stored and retained for the required period.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream provides durable subscriptions for all transaction events. Messages are retained for 7 years by default (&lt;code>max_message_age_seconds: 220898160&lt;/code>). Full event replay is available from any point in the retention window. Events are append-only and immutable once published.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream stream configuration showing retention settings; durable subscription configuration; event replay demonstration; storage utilization metrics.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc73--monitoring-and-alerting">CC7.3 — Monitoring and Alerting&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system provides monitoring data and alerting capabilities for operational awareness.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Health endpoints on each service expose operational metrics including connection status, queue depths, and storage utilization. Storage metrics track disk usage, shard distribution, and replication status. Alerting thresholds are configurable per deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Health endpoint response samples; monitoring dashboard configuration; alert rule definitions; historical alert records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc74--incident-response">CC7.4 — Incident Response&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Security and operational incidents are identified, reported, and resolved through defined procedures.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Incident response is managed by Sankofa Labs. Defined escalation paths cover severity levels from informational to critical. Customers are notified of security incidents affecting their deployment per contractual SLAs. Post-incident reviews produce root cause analysis and remediation actions.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Incident response plan documentation; incident ticket history; post-incident review reports; customer notification records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc8--change-management">CC8 — Change Management&lt;/h2>
+&lt;h3 id="cc81--controlled-deployments">CC8.1 — Controlled Deployments&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>All changes to the production system are managed through a controlled deployment process.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>All deployments are managed exclusively by Sankofa Labs. Customers do not have the ability to deploy code or configuration changes to the engine. Changes follow a defined release process with staging validation before production deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Deployment records and change logs; release approval records; staging validation results; access control evidence showing customers cannot initiate deployments.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc82--version-management">CC8.2 — Version Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Software versions are tracked and documented with clear change history.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>The Sankofa Engine follows semantic versioning (SemVer). Every release includes a changelog documenting new features, bug fixes, and breaking changes. Release notes are published to customers before upgrades are applied.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Version history and changelog; release notes; semantic version tags in source control; customer communication records for version upgrades.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc83--automated-testing-in-cicd">CC8.3 — Automated Testing in CI/CD&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Changes are validated through automated testing before deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>CI/CD pipeline executes unit tests, benchmark tests, and end-to-end (e2e) tests on every change. Pipeline must pass all test stages before a release artifact is produced. Test coverage is tracked and regressions block deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>CI/CD pipeline configuration; test execution logs and results; test coverage reports; pipeline failure records showing blocked deployments.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc9--risk-mitigation">CC9 — Risk Mitigation&lt;/h2>
+&lt;h3 id="cc91--network-segmentation">CC9.1 — Network Segmentation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Network communication between services is restricted to only what is required.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes NetworkPolicies define explicit ingress and egress rules for each service. Only required communication paths are permitted (e.g., API Gateway → NATS, Shard Workers → NATS, Shard Workers → ScyllaDB). All other inter-pod traffic is denied by default.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>NetworkPolicy manifests; &lt;code>kubectl describe networkpolicy&lt;/code> output; network traffic logs showing denied connections; architecture diagram of permitted communication paths.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc92--secret-management">CC9.2 — Secret Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Secrets are managed securely with no plaintext storage.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>OpenBao (a fork of HashiCorp Vault) manages all secrets including database credentials, API keys, encryption keys, and TLS certificates. Secrets are injected into pods at runtime via the OpenBao agent. No plaintext secrets exist in source code, configuration files, or environment variables.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>OpenBao configuration and policies; Kubernetes pod specs showing secret injection; source code scan results confirming no hardcoded secrets; OpenBao audit logs showing secret access patterns.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc93--encryption-at-rest">CC9.3 — Encryption at Rest&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Data at rest is encrypted using strong cryptographic algorithms.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>AES-GCM-256 envelope encryption protects all data at rest. The Key Management Service (KMS) derives Data Encryption Keys (DEKs) which are used to encrypt data. The DEK itself is encrypted by the KMS master key and stored alongside the ciphertext. Per-dataClass key derivation ensures different data classifications use different encryption keys.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Encryption implementation source code; KMS configuration; encrypted data samples showing ciphertext format; key derivation logic; dataClass-to-key mapping configuration.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc94--tamper-detection">CC9.4 — Tamper Detection&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Data integrity is protected through cryptographic mechanisms that detect unauthorized modification.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Every transaction extends a SHA-256 audit hash chain per account. Each hash incorporates the previous hash, transaction ID, account ID, amount, type, and timestamp — creating an append-only log where any tampering breaks the chain. Additionally, every processed transaction receives an ECDSA P-256 signed receipt that independently verifies integrity.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Hash chain implementation source code; hash chain verification tool output; signed receipt samples with signature verification; chain integrity audit reports.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table></description></item><item><title>Encryption</title><link>https://docs.sankofa.foundation/security/encryption/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/encryption/</guid><description>&lt;p>The Sankofa Engine encrypts data both at rest and in transit. This page documents the cryptographic algorithms, key management architecture, and certificate lifecycle used to protect customer data.&lt;/p>
+&lt;h2 id="encryption-at-rest">Encryption at Rest&lt;/h2>
+&lt;p>All data at rest is protected using &lt;strong>AES-GCM-256 envelope encryption&lt;/strong>. Envelope encryption separates the key that encrypts data (Data Encryption Key, or DEK) from the key that protects the DEK (the KMS master key), providing defense in depth and enabling key rotation without re-encrypting all data.&lt;/p></description></item><item><title>Access Control</title><link>https://docs.sankofa.foundation/security/access-control/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/access-control/</guid><description>&lt;p>The Sankofa Engine enforces access control at three layers: application authentication, policy-based authorization, and infrastructure-level isolation. This page documents each layer.&lt;/p>
+&lt;h2 id="authentication">Authentication&lt;/h2>
+&lt;h3 id="api-key-provisioning">API Key Provisioning&lt;/h3>
+&lt;p>API keys are provisioned by Sankofa Labs during customer onboarding. Customers do not self-register or self-provision credentials.&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Step&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>1. Onboarding request&lt;/td>
+ &lt;td>Customer requests access through Sankofa Labs&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>2. Identity verification&lt;/td>
+ &lt;td>Sankofa Labs verifies the customer&amp;rsquo;s identity and authorization&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3. Key generation&lt;/td>
+ &lt;td>A unique &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> pair is generated&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>4. Secure delivery&lt;/td>
+ &lt;td>Credentials are delivered through a secure channel&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5. Activation&lt;/td>
+ &lt;td>Credentials are activated in the target deployment&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="jwt-token-exchange">JWT Token Exchange&lt;/h3>
+&lt;p>Clients authenticate by exchanging their API key credentials for a JWT bearer token:&lt;/p></description></item><item><title>Audit Logging</title><link>https://docs.sankofa.foundation/security/audit-logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/audit-logging/</guid><description>&lt;p>The Sankofa Engine provides cryptographic guarantees of data integrity through three complementary mechanisms: SHA-256 audit hash chains, ECDSA P-256 signed receipts, and immutable event retention. Together, these mechanisms ensure that every transaction is independently verifiable and any tampering is detectable.&lt;/p>
+&lt;h2 id="sha-256-audit-hash-chain">SHA-256 Audit Hash Chain&lt;/h2>
+&lt;p>Every transaction processed by the Sankofa Engine extends the account&amp;rsquo;s audit hash chain. Each hash incorporates the previous hash, creating an append-only cryptographic log where modification of any entry invalidates all subsequent hashes.&lt;/p></description></item><item><title>Data Residency &amp; Retention</title><link>https://docs.sankofa.foundation/security/data-residency/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/data-residency/</guid><description>&lt;p>The Sankofa Engine uses a multi-tier storage architecture to balance performance, cost, and regulatory compliance. This page documents where data resides, how long it is retained, and how it moves between tiers.&lt;/p>
+&lt;h2 id="storage-tiers">Storage Tiers&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Tier&lt;/th>
+ &lt;th>Technology&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;th>Default Retention&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Hot&lt;/strong>&lt;/td>
+ &lt;td>ScyllaDB 6.2&lt;/td>
+ &lt;td>Transaction ledger, account state&lt;/td>
+ &lt;td>Configurable (default 2 years)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Projection&lt;/strong>&lt;/td>
+ &lt;td>PostgreSQL 16&lt;/td>
+ &lt;td>CQRS read model (balances, query views)&lt;/td>
+ &lt;td>Current state (always up-to-date)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Cold&lt;/strong>&lt;/td>
+ &lt;td>S3 / Local filesystem&lt;/td>
+ &lt;td>Archived transactions&lt;/td>
+ &lt;td>Long-term (configurable)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Event Log&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream&lt;/td>
+ &lt;td>Transaction events, signed receipts&lt;/td>
+ &lt;td>7 years&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="tier-descriptions">Tier Descriptions&lt;/h3>
+&lt;p>&lt;strong>Hot Tier (ScyllaDB 6.2)&lt;/strong>
+The hot tier stores the active transaction ledger and account state. ScyllaDB provides low-latency reads and writes for real-time transaction processing. Data remains in the hot tier for the configured retention period (default 2 years) before becoming eligible for archival.&lt;/p></description></item></channel></rss>

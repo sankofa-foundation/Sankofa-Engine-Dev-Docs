@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>API Reference on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/api-reference/</link><description>Recent content in API Reference on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/api-reference/index.xml" rel="self" type="application/rss+xml"/><item><title>Authentication</title><link>https://docs.sankofa.foundation/api-reference/authentication/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/authentication/</guid><description>&lt;p>The Sankofa Engine supports two authentication models. Most integrations use &lt;strong>JWT bearer tokens&lt;/strong> for API access. Self-custody deployments additionally use &lt;strong>ECDSA transaction signing&lt;/strong> to authorize individual transactions without sharing private keys.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+&lt;h2 id="jwt-authentication-default">JWT Authentication (Default)&lt;/h2>
+&lt;p>Sankofa Labs provisions API credentials (&lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code>) during onboarding. Your application exchanges these credentials for a short-lived JWT token, then includes that token on every request.&lt;/p>
+&lt;h3 id="1-obtain-a-token">1. Obtain a Token&lt;/h3>
+&lt;p>&lt;strong>POST /v1/auth/token&lt;/strong>&lt;/p></description></item><item><title>API Explorer (Swagger UI)</title><link>https://docs.sankofa.foundation/api-reference/swagger/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/swagger/</guid><description>&lt;div id="swagger-ui">&lt;/div>
+&lt;script src="https://docs.sankofa.foundation/swagger-ui/swagger-ui-bundle.js">&lt;/script>
+&lt;script src="https://docs.sankofa.foundation/swagger-ui/swagger-ui-standalone-preset.js">&lt;/script>
+&lt;script>
+window.onload = function() {
+ SwaggerUIBundle({
+ url: "\/openapi\/openapi.yaml",
+ dom_id: '#swagger-ui',
+ deepLinking: true,
+ presets: [
+ SwaggerUIBundle.presets.apis,
+ SwaggerUIStandalonePreset
+ ],
+ plugins: [
+ SwaggerUIBundle.plugins.DownloadUrl
+ ],
+ layout: "StandaloneLayout",
+ defaultModelsExpandDepth: 2,
+ defaultModelExpandDepth: 2,
+ docExpansion: "list",
+ filter: true,
+ showExtensions: true,
+ showCommonExtensions: true,
+ tryItOutEnabled: false
+ });
+};
+&lt;/script></description></item><item><title>Transactions</title><link>https://docs.sankofa.foundation/api-reference/transactions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/transactions/</guid><description>&lt;p>The Transactions API lets you submit financial operations (debits, credits, transfers, exchanges, mints, and burns), check their processing status, and query transaction history. All transactions are processed asynchronously and are immutable once completed.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+
+
+&lt;div class="alert alert-warning" role="alert">
+&lt;h4 class="alert-heading">Important&lt;/h4>
+
+ All monetary amounts are represented as &lt;strong>strings&lt;/strong>, not numbers. This avoids IEEE 754 floating-point precision issues. For example, use &lt;code>&amp;quot;100.00&amp;quot;&lt;/code> instead of &lt;code>100.00&lt;/code>. Amounts are limited to 18 integer digits and 18 decimal digits.
+
+&lt;/div>
+
+
+
+&lt;div class="alert alert-info" role="alert">
+&lt;h4 class="alert-heading">Request Limits&lt;/h4>
+
+ All &lt;code>POST&lt;/code> requests must include the &lt;code>Content-Type: application/json&lt;/code> header. The maximum request body size is &lt;strong>1 MB&lt;/strong>.
+
+&lt;/div>
+
+&lt;h2 id="transaction-types">Transaction Types&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;th>Example Use Case&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>credit&lt;/code>&lt;/td>
+ &lt;td>Funds in — increases account balance&lt;/td>
+ &lt;td>Cash deposit, incoming wire&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>debit&lt;/code>&lt;/td>
+ &lt;td>Funds out — decreases account balance&lt;/td>
+ &lt;td>Withdrawal, fee deduction&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>transfer&lt;/code>&lt;/td>
+ &lt;td>Move between accounts (pair with &lt;code>group_id&lt;/code>)&lt;/td>
+ &lt;td>Internal account-to-account transfer&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>exchange&lt;/code>&lt;/td>
+ &lt;td>Asset swap between token types&lt;/td>
+ &lt;td>Currency conversion&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>mint&lt;/code>&lt;/td>
+ &lt;td>Create new token supply&lt;/td>
+ &lt;td>Token issuance&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>burn&lt;/code>&lt;/td>
+ &lt;td>Destroy token supply&lt;/td>
+ &lt;td>Token redemption&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="single-leg-vs-multi-leg-transactions">Single-Leg vs. Multi-Leg Transactions&lt;/h2>
+&lt;p>&lt;strong>Single-leg&lt;/strong> transactions operate on one account with no counterpart — a cash deposit (credit) or withdrawal (debit) where funds enter or leave the system.&lt;/p></description></item><item><title>Accounts</title><link>https://docs.sankofa.foundation/api-reference/accounts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/accounts/</guid><description>&lt;p>The Accounts API provides read-only access to account state, token balances, and NFT ownership. These endpoints are served from a PostgreSQL projection layer, which means they are fast but eventually consistent with the underlying ledger.&lt;/p>
+&lt;h3 id="account-id-format">Account ID Format&lt;/h3>
+&lt;p>Account identifiers must be ASCII-only, at most 128 characters, and may only contain: &lt;code>a-zA-Z0-9_.-:&lt;/code>. Requests with invalid account IDs are rejected with a &lt;strong>400 Bad Request&lt;/strong> error.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p></description></item><item><title>Tokens &amp; NFTs</title><link>https://docs.sankofa.foundation/api-reference/tokens/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/tokens/</guid><description>&lt;p>The Tokens API covers registration and querying of both fungible tokens and non-fungible tokens (NFTs). Fungible tokens represent interchangeable assets (currencies, loyalty points, carbon credits). NFTs represent unique items with individual provenance tracking.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+
+
+&lt;div class="alert alert-warning" role="alert">
+&lt;h4 class="alert-heading">Important&lt;/h4>
+
+ All numeric values representing quantities or supplies are encoded as &lt;strong>strings&lt;/strong> to avoid IEEE 754 floating-point precision issues. The &lt;code>decimals&lt;/code> field (0-18) defines the token&amp;rsquo;s precision.
+
+&lt;/div>
+
+&lt;hr>
+&lt;h2 id="fungible-tokens">Fungible Tokens&lt;/h2>
+&lt;h3 id="register-a-token">Register a Token&lt;/h3>
+&lt;p>&lt;strong>POST /v1/fungible-tokens&lt;/strong>&lt;/p></description></item><item><title>Compliance &amp; Attestations</title><link>https://docs.sankofa.foundation/api-reference/compliance/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/compliance/</guid><description>&lt;p>The Compliance API enables privacy-preserving audits and verifiable attestations. Using zero-knowledge proofs (ZKPs), the Sankofa Engine can generate cryptographic assertions that prove specific facts about the ledger &amp;ndash; such as solvency or asset provenance &amp;ndash; without revealing the underlying data. This allows regulated entities to demonstrate compliance to auditors and regulators while preserving the confidentiality of individual account balances and transaction details.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+&lt;hr>
+&lt;h2 id="zero-knowledge-proof-assertions">Zero-Knowledge Proof Assertions&lt;/h2>
+&lt;p>The assertions API generates ZKP proofs that can be independently verified. Each proof is a cryptographic object that demonstrates a specific claim is true, without disclosing any of the private inputs used to construct it.&lt;/p></description></item></channel></rss>

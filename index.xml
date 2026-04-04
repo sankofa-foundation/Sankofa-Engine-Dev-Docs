@@ -1,0 +1,1591 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Sankofa Engine on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/</link><description>Recent content in Sankofa Engine on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/index.xml" rel="self" type="application/rss+xml"/><item><title>Authentication</title><link>https://docs.sankofa.foundation/api-reference/authentication/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/authentication/</guid><description>&lt;p>The Sankofa Engine supports two authentication models. Most integrations use &lt;strong>JWT bearer tokens&lt;/strong> for API access. Self-custody deployments additionally use &lt;strong>ECDSA transaction signing&lt;/strong> to authorize individual transactions without sharing private keys.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+&lt;h2 id="jwt-authentication-default">JWT Authentication (Default)&lt;/h2>
+&lt;p>Sankofa Labs provisions API credentials (&lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code>) during onboarding. Your application exchanges these credentials for a short-lived JWT token, then includes that token on every request.&lt;/p>
+&lt;h3 id="1-obtain-a-token">1. Obtain a Token&lt;/h3>
+&lt;p>&lt;strong>POST /v1/auth/token&lt;/strong>&lt;/p></description></item><item><title>Configuration</title><link>https://docs.sankofa.foundation/reference/configuration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/configuration/</guid><description>&lt;h2 id="configuration-schema">Configuration Schema&lt;/h2>
+&lt;p>The Sankofa Engine is configured via a YAML file (default path: &lt;code>config.yaml&lt;/code>). Below is the complete schema with all supported fields.&lt;/p>
+&lt;h3 id="default-configuration">Default Configuration&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#0550ae">shard_count&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">4&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">nats&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">cluster_urls&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>- &lt;span style="color:#0a3069">&amp;#34;nats://localhost:4222&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">jetstream&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">max_message_age_seconds&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">220898160&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#57606a"># 7 years&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">scylladb&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">endpoints&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>- &lt;span style="color:#0a3069">&amp;#34;localhost:9042&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">keyspace&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;sankofa_engine&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">read_consistency&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;ONE&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">request_timeout&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;30s&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">kms&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">provider&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;local&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">region&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;us-east-1&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">openbao&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">address&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;http://localhost:8200&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">token&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;dev-root-token&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">transit_mount&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;transit&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">service&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">name&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;monolith&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">id&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="field-reference">Field Reference&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field Path&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Default&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>shard_count&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>&lt;code>4&lt;/code>&lt;/td>
+ &lt;td>Number of shards for partitioning transactions across workers. Determines the modulus for FNV-1a shard routing.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>nats.cluster_urls&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>&lt;code>[&amp;quot;nats://localhost:4222&amp;quot;]&lt;/code>&lt;/td>
+ &lt;td>List of NATS server URLs for the client to connect to. Supports multiple URLs for cluster failover.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>nats.jetstream.max_message_age_seconds&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>&lt;code>220898160&lt;/code> (7 years)&lt;/td>
+ &lt;td>Maximum age in seconds before JetStream messages are expired. Set to 7 years for long-term audit retention.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.endpoints&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>&lt;code>[&amp;quot;localhost:9042&amp;quot;]&lt;/code>&lt;/td>
+ &lt;td>ScyllaDB/Cassandra contact points. The driver discovers additional nodes from these seeds.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.keyspace&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;sankofa_engine&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>ScyllaDB keyspace name where all tables reside.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.read_consistency&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;ONE&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Read consistency level. Common values: &lt;code>ONE&lt;/code>, &lt;code>QUORUM&lt;/code>, &lt;code>LOCAL_QUORUM&lt;/code>.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.request_timeout&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;30s&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Timeout for individual ScyllaDB requests. Go duration format (e.g., &lt;code>30s&lt;/code>, &lt;code>1m&lt;/code>).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>kms.provider&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;local&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Key management provider. &lt;code>&amp;quot;local&amp;quot;&lt;/code> for development, &lt;code>&amp;quot;aws&amp;quot;&lt;/code> for AWS KMS in production.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>kms.region&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;us-east-1&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Cloud provider region for the KMS service.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.address&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;http://localhost:8200&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>OpenBao (Vault-compatible) server address for transit encryption.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.token&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;dev-root-token&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Authentication token for OpenBao. Use a provisioned secret in production.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.transit_mount&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;transit&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Mount path for the OpenBao transit secrets engine.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>service.name&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;monolith&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Service identity. Used for logging, metrics, and NATS subject routing. Values: &lt;code>monolith&lt;/code>, &lt;code>api&lt;/code>, &lt;code>shard-worker&lt;/code>.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>service.id&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Unique instance identifier. Used to distinguish multiple instances of the same service.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="environment-variable-overrides">Environment Variable Overrides&lt;/h2>
+&lt;p>Environment variables take precedence over values in the config file. Use these to configure the engine in containerized or orchestrated environments.&lt;/p></description></item><item><title>Security Controls</title><link>https://docs.sankofa.foundation/security/controls/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/controls/</guid><description>&lt;p>This page inventories the security controls implemented in the Sankofa Engine, organized by SOC 2 Trust Service Categories. Each control includes an ID, description, implementation details, and the evidence an auditor would examine to verify the control is operating effectively.&lt;/p>
+&lt;h2 id="cc6--logical-and-physical-access-controls">CC6 — Logical and Physical Access Controls&lt;/h2>
+&lt;h3 id="cc61--user-authentication">CC6.1 — User Authentication&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system authenticates users and services before granting access to protected resources.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>JWT-based authentication with configurable token lifetime. API keys are provisioned by Sankofa Labs during customer onboarding. Clients exchange &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> for a JWT bearer token via the &lt;code>/auth/token&lt;/code> endpoint. Token lifetimes are configurable per deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>JWT validation middleware source code; token lifetime configuration values; API key provisioning records maintained by Sankofa Labs; authentication failure logs showing rejected requests.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc62--encryption-of-data-in-transit">CC6.2 — Encryption of Data in Transit&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system protects data in transit using encryption between all components.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Mutual TLS (mTLS) is enforced between all internal services (API Gateway ↔ NATS JetStream, Shard Workers ↔ NATS JetStream, API Gateway ↔ ScyllaDB, etc.). TLS 1.2+ is required for client-to-API Gateway communication. Certificate management uses a &lt;code>CertificateManager&lt;/code> interface that supports file watching and automatic reload on rotation.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>TLS configuration in service manifests; mTLS certificate chain; &lt;code>CertificateManager&lt;/code> source code showing file-watch and auto-reload logic; network policy definitions requiring encrypted transport; TLS handshake logs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc63--role-based-authorization">CC6.3 — Role-Based Authorization&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system restricts access to resources based on assigned roles and permissions.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Casbin v2 RBAC engine with policy-based authorization. Policies define subject (role or user), object (resource), and action (operation). Authorization is enforced at the API Gateway middleware layer before requests reach backend services. Role definitions are maintained in policy files and loaded at startup.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Casbin policy files defining roles and permissions; middleware source code enforcing authorization checks; authorization denial logs; role assignment records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc64--infrastructure-access-restrictions">CC6.4 — Infrastructure Access Restrictions&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Infrastructure-level access is restricted to authorized services and personnel.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes RBAC controls access to cluster resources. All Sankofa Engine components run in an isolated &lt;code>sankofa-engine&lt;/code> namespace. Kubernetes NetworkPolicies restrict pod-to-pod communication to only the required paths (e.g., shard workers may communicate with NATS and ScyllaDB but not directly with the API Gateway).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes RBAC role and role-binding manifests; namespace configuration; NetworkPolicy manifests; &lt;code>kubectl&lt;/code> output showing effective policies; cluster audit logs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc65--api-key-lifecycle-management">CC6.5 — API Key Lifecycle Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC6.5&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>API keys are managed through a defined lifecycle including provisioning, rotation, and revocation.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>API keys are provisioned by Sankofa Labs during customer onboarding. Key rotation is supported without downtime — new keys can be issued while old keys remain valid during a configurable grace period. Revocation is immediate upon request. All key lifecycle events are logged.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>API key provisioning procedures; key rotation records; revocation logs; key lifecycle event audit trail maintained by Sankofa Labs.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc7--system-operations">CC7 — System Operations&lt;/h2>
+&lt;h3 id="cc71--health-monitoring-and-availability">CC7.1 — Health Monitoring and Availability&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system is monitored for availability and automatically scales to meet demand.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes liveness and readiness probes on port 9090 for all services. Horizontal Pod Autoscaler (HPA) automatically scales shard workers based on CPU and memory utilization. Health endpoints expose service status, connection state, and dependency health.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes deployment manifests showing probe configuration; HPA configuration and scaling event logs; health endpoint responses; uptime monitoring records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc72--event-durability-and-retention">CC7.2 — Event Durability and Retention&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>System events are durably stored and retained for the required period.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream provides durable subscriptions for all transaction events. Messages are retained for 7 years by default (&lt;code>max_message_age_seconds: 220898160&lt;/code>). Full event replay is available from any point in the retention window. Events are append-only and immutable once published.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream stream configuration showing retention settings; durable subscription configuration; event replay demonstration; storage utilization metrics.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc73--monitoring-and-alerting">CC7.3 — Monitoring and Alerting&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>The system provides monitoring data and alerting capabilities for operational awareness.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Health endpoints on each service expose operational metrics including connection status, queue depths, and storage utilization. Storage metrics track disk usage, shard distribution, and replication status. Alerting thresholds are configurable per deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Health endpoint response samples; monitoring dashboard configuration; alert rule definitions; historical alert records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc74--incident-response">CC7.4 — Incident Response&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC7.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Security and operational incidents are identified, reported, and resolved through defined procedures.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Incident response is managed by Sankofa Labs. Defined escalation paths cover severity levels from informational to critical. Customers are notified of security incidents affecting their deployment per contractual SLAs. Post-incident reviews produce root cause analysis and remediation actions.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Incident response plan documentation; incident ticket history; post-incident review reports; customer notification records.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc8--change-management">CC8 — Change Management&lt;/h2>
+&lt;h3 id="cc81--controlled-deployments">CC8.1 — Controlled Deployments&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>All changes to the production system are managed through a controlled deployment process.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>All deployments are managed exclusively by Sankofa Labs. Customers do not have the ability to deploy code or configuration changes to the engine. Changes follow a defined release process with staging validation before production deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Deployment records and change logs; release approval records; staging validation results; access control evidence showing customers cannot initiate deployments.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc82--version-management">CC8.2 — Version Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Software versions are tracked and documented with clear change history.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>The Sankofa Engine follows semantic versioning (SemVer). Every release includes a changelog documenting new features, bug fixes, and breaking changes. Release notes are published to customers before upgrades are applied.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Version history and changelog; release notes; semantic version tags in source control; customer communication records for version upgrades.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc83--automated-testing-in-cicd">CC8.3 — Automated Testing in CI/CD&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC8.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Changes are validated through automated testing before deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>CI/CD pipeline executes unit tests, benchmark tests, and end-to-end (e2e) tests on every change. Pipeline must pass all test stages before a release artifact is produced. Test coverage is tracked and regressions block deployment.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>CI/CD pipeline configuration; test execution logs and results; test coverage reports; pipeline failure records showing blocked deployments.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cc9--risk-mitigation">CC9 — Risk Mitigation&lt;/h2>
+&lt;h3 id="cc91--network-segmentation">CC9.1 — Network Segmentation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.1&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Network communication between services is restricted to only what is required.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes NetworkPolicies define explicit ingress and egress rules for each service. Only required communication paths are permitted (e.g., API Gateway → NATS, Shard Workers → NATS, Shard Workers → ScyllaDB). All other inter-pod traffic is denied by default.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>NetworkPolicy manifests; &lt;code>kubectl describe networkpolicy&lt;/code> output; network traffic logs showing denied connections; architecture diagram of permitted communication paths.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc92--secret-management">CC9.2 — Secret Management&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.2&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Secrets are managed securely with no plaintext storage.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>OpenBao (a fork of HashiCorp Vault) manages all secrets including database credentials, API keys, encryption keys, and TLS certificates. Secrets are injected into pods at runtime via the OpenBao agent. No plaintext secrets exist in source code, configuration files, or environment variables.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>OpenBao configuration and policies; Kubernetes pod specs showing secret injection; source code scan results confirming no hardcoded secrets; OpenBao audit logs showing secret access patterns.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc93--encryption-at-rest">CC9.3 — Encryption at Rest&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.3&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Data at rest is encrypted using strong cryptographic algorithms.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>AES-GCM-256 envelope encryption protects all data at rest. The Key Management Service (KMS) derives Data Encryption Keys (DEKs) which are used to encrypt data. The DEK itself is encrypted by the KMS master key and stored alongside the ciphertext. Per-dataClass key derivation ensures different data classifications use different encryption keys.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Encryption implementation source code; KMS configuration; encrypted data samples showing ciphertext format; key derivation logic; dataClass-to-key mapping configuration.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="cc94--tamper-detection">CC9.4 — Tamper Detection&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Attribute&lt;/th>
+ &lt;th>Detail&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Control ID&lt;/strong>&lt;/td>
+ &lt;td>CC9.4&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Description&lt;/strong>&lt;/td>
+ &lt;td>Data integrity is protected through cryptographic mechanisms that detect unauthorized modification.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Implementation&lt;/strong>&lt;/td>
+ &lt;td>Every transaction extends a SHA-256 audit hash chain per account. Each hash incorporates the previous hash, transaction ID, account ID, amount, type, and timestamp — creating an append-only log where any tampering breaks the chain. Additionally, every processed transaction receives an ECDSA P-256 signed receipt that independently verifies integrity.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Evidence&lt;/strong>&lt;/td>
+ &lt;td>Hash chain implementation source code; hash chain verification tool output; signed receipt samples with signature verification; chain integrity audit reports.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table></description></item><item><title>Introduction</title><link>https://docs.sankofa.foundation/overview/introduction/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/introduction/</guid><description>&lt;h2 id="what-is-sankofa-engine">What is Sankofa Engine&lt;/h2>
+&lt;p>Sankofa Engine is a &lt;strong>sharded, privacy-preserving financial ledger engine&lt;/strong> purpose-built for digital assets. It delivers cryptographically auditable transaction processing with zero-knowledge proof capabilities, enabling organizations to operate compliant, high-throughput ledger infrastructure without exposing sensitive financial data.&lt;/p>
+&lt;p>Traditional ledger systems force a choice between transparency and privacy. Sankofa Engine eliminates that trade-off: every transaction is recorded in a tamper-evident hash chain and signed with a cryptographic receipt, while encrypted balances and ZKP assertions ensure that only authorized parties can observe account state.&lt;/p></description></item><item><title>Quickstart</title><link>https://docs.sankofa.foundation/guides/quickstart/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/quickstart/</guid><description>&lt;p>This guide walks you through a complete first integration with the Sankofa Engine API. You will authenticate, deposit funds into an account, transfer between accounts, and query balances.&lt;/p>
+&lt;h2 id="prerequisites">Prerequisites&lt;/h2>
+&lt;p>Before you begin, you need:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>API credentials&lt;/strong> from Sankofa Labs: a &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> provisioned during onboarding.&lt;/li>
+&lt;li>&lt;strong>curl&lt;/strong> (or any HTTP client) installed on your machine.&lt;/li>
+&lt;li>&lt;strong>Test accounts&lt;/strong> set up in the Sankofa Engine with a registered fungible token (your onboarding contact will provide these).&lt;/li>
+&lt;/ul>
+
+
+&lt;div class="alert alert-info" role="alert">
+&lt;h4 class="alert-heading">Sandbox Environment&lt;/h4>
+
+ During development, use the sandbox base URL &lt;code>https://sandbox.api.example.com&lt;/code>. All examples in this guide use &lt;code>https://api.example.com&lt;/code> — replace this with your environment&amp;rsquo;s base URL.
+
+&lt;/div>
+
+&lt;h2 id="step-1-authenticate">Step 1: Authenticate&lt;/h2>
+&lt;p>Exchange your client credentials for a JWT access token.&lt;/p></description></item><item><title>API Explorer (Swagger UI)</title><link>https://docs.sankofa.foundation/api-reference/swagger/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/swagger/</guid><description>&lt;div id="swagger-ui">&lt;/div>
+&lt;script src="https://docs.sankofa.foundation/swagger-ui/swagger-ui-bundle.js">&lt;/script>
+&lt;script src="https://docs.sankofa.foundation/swagger-ui/swagger-ui-standalone-preset.js">&lt;/script>
+&lt;script>
+window.onload = function() {
+ SwaggerUIBundle({
+ url: "\/openapi\/openapi.yaml",
+ dom_id: '#swagger-ui',
+ deepLinking: true,
+ presets: [
+ SwaggerUIBundle.presets.apis,
+ SwaggerUIStandalonePreset
+ ],
+ plugins: [
+ SwaggerUIBundle.plugins.DownloadUrl
+ ],
+ layout: "StandaloneLayout",
+ defaultModelsExpandDepth: 2,
+ defaultModelExpandDepth: 2,
+ docExpansion: "list",
+ filter: true,
+ showExtensions: true,
+ showCommonExtensions: true,
+ tryItOutEnabled: false
+ });
+};
+&lt;/script></description></item><item><title>Architecture</title><link>https://docs.sankofa.foundation/overview/architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/architecture/</guid><description>&lt;h2 id="architectural-style">Architectural Style&lt;/h2>
+&lt;p>Sankofa Engine follows &lt;strong>Hexagonal Architecture&lt;/strong> (Ports &amp;amp; Adapters) combined with &lt;strong>Domain-Driven Design&lt;/strong> (DDD). This separation ensures the business logic remains independent of infrastructure concerns and can be tested, reviewed, and evolved without touching database drivers, message brokers, or HTTP frameworks.&lt;/p>
+&lt;p>The codebase is organized into four layers:&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Layer&lt;/th>
+ &lt;th>Path&lt;/th>
+ &lt;th>Responsibility&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Domain Core&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/core/&lt;/code>&lt;/td>
+ &lt;td>Pure business logic and domain models. Zero infrastructure dependencies.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Ports&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/core/port/&lt;/code>&lt;/td>
+ &lt;td>Go interfaces that define contracts between the domain and the outside world (e.g., &lt;code>LedgerRepository&lt;/code>, &lt;code>EventPublisher&lt;/code>).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Adapters&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/adapter/&lt;/code>&lt;/td>
+ &lt;td>Concrete implementations of ports — ScyllaDB repositories, NATS publishers, OpenBao key providers, etc.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Services&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/service/&lt;/code>&lt;/td>
+ &lt;td>Application services that orchestrate domain operations, coordinate across ports, and enforce transaction boundaries.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>Dependencies always point inward: adapters depend on ports, ports depend on domain types, and the domain core depends on nothing external.&lt;/p></description></item><item><title>Encryption</title><link>https://docs.sankofa.foundation/security/encryption/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/encryption/</guid><description>&lt;p>The Sankofa Engine encrypts data both at rest and in transit. This page documents the cryptographic algorithms, key management architecture, and certificate lifecycle used to protect customer data.&lt;/p>
+&lt;h2 id="encryption-at-rest">Encryption at Rest&lt;/h2>
+&lt;p>All data at rest is protected using &lt;strong>AES-GCM-256 envelope encryption&lt;/strong>. Envelope encryption separates the key that encrypts data (Data Encryption Key, or DEK) from the key that protects the DEK (the KMS master key), providing defense in depth and enabling key rotation without re-encrypting all data.&lt;/p></description></item><item><title>Libraries &amp; Dependencies</title><link>https://docs.sankofa.foundation/reference/libraries/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/libraries/</guid><description>&lt;p>The Sankofa Engine is written in Go and requires &lt;strong>Go 1.25 or later&lt;/strong>. Below are all direct dependencies from &lt;code>go.mod&lt;/code>, grouped by category.&lt;/p>
+&lt;h2 id="http-framework">HTTP Framework&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/gofiber/fiber/v3&lt;/code>&lt;/td>
+ &lt;td>v3.1.0&lt;/td>
+ &lt;td>HTTP framework for the REST API&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="database">Database&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/gocql/gocql&lt;/code>&lt;/td>
+ &lt;td>v1.7.0&lt;/td>
+ &lt;td>ScyllaDB/Cassandra driver&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/jackc/pgx/v5&lt;/code>&lt;/td>
+ &lt;td>v5.9.1&lt;/td>
+ &lt;td>PostgreSQL driver with connection pooling&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="messaging">Messaging&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/nats-io/nats.go&lt;/code>&lt;/td>
+ &lt;td>v1.49.0&lt;/td>
+ &lt;td>NATS client for pub/sub and RPC&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/nats-io/nats-server/v2&lt;/code>&lt;/td>
+ &lt;td>v2.12.6&lt;/td>
+ &lt;td>Embedded NATS server for testing&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="authentication-and-authorization">Authentication and Authorization&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/golang-jwt/jwt/v5&lt;/code>&lt;/td>
+ &lt;td>v5.3.1&lt;/td>
+ &lt;td>JWT token generation and validation&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/casbin/casbin/v2&lt;/code>&lt;/td>
+ &lt;td>v2.135.0&lt;/td>
+ &lt;td>Role-based access control (RBAC)&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cryptography">Cryptography&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>golang.org/x/crypto&lt;/code>&lt;/td>
+ &lt;td>v0.49.0&lt;/td>
+ &lt;td>Cryptographic primitives&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cloud-services">Cloud Services&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/aws/aws-sdk-go-v2/config&lt;/code>&lt;/td>
+ &lt;td>v1.29.5&lt;/td>
+ &lt;td>AWS SDK configuration&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/aws/aws-sdk-go-v2/service/kms&lt;/code>&lt;/td>
+ &lt;td>v1.43.0&lt;/td>
+ &lt;td>AWS KMS for key management&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="utilities">Utilities&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/google/uuid&lt;/code>&lt;/td>
+ &lt;td>v1.6.0&lt;/td>
+ &lt;td>UUID generation&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/shirou/gopsutil/v3&lt;/code>&lt;/td>
+ &lt;td>v3.24.5&lt;/td>
+ &lt;td>System metrics collection&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>golang.org/x/time&lt;/code>&lt;/td>
+ &lt;td>v0.15.0&lt;/td>
+ &lt;td>Rate limiting&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>gopkg.in/yaml.v3&lt;/code>&lt;/td>
+ &lt;td>v3.0.1&lt;/td>
+ &lt;td>YAML configuration parsing&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="testing">Testing&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/stretchr/testify&lt;/code>&lt;/td>
+ &lt;td>v1.11.1&lt;/td>
+ &lt;td>Testing assertions and mocks&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="dependency-management">Dependency Management&lt;/h2>
+&lt;p>The project uses Go modules (&lt;code>go.mod&lt;/code> / &lt;code>go.sum&lt;/code>) for dependency management. To update dependencies:&lt;/p></description></item><item><title>Transaction Flow</title><link>https://docs.sankofa.foundation/guides/transaction-flow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/transaction-flow/</guid><description>&lt;p>This guide walks through the complete lifecycle of a transaction in the Sankofa Engine, from the moment a client submits it to the point where the finalized receipt is available for query. Understanding this flow is essential for building reliable integrations, debugging processing delays, and reasoning about failure scenarios.&lt;/p>
+&lt;h2 id="overview">Overview&lt;/h2>
+&lt;p>Every transaction passes through seven stages:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-text" data-lang="text">&lt;span style="display:flex;">&lt;span> Client API Gateway NATS JetStream Shard Worker
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ POST /v1/transactions│ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │──────────────────────►│ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ validate, auth, │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ compute shard │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ 202 Accepted │ publish to │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │◄──────────────────────│ LEDGER.shard-{N} │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │──────────────────────►│ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ deliver to worker │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │──────────────────────►│
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ validate balance
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ update in-memory
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ extend hash chain
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ sign receipt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │ write ScyllaDB
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │◄──────────────────────│ ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ Projection Service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │──────────────────────►│
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ receipt event │ update PostgreSQL
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ GET /v1/transactions/{txn_id} │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │──────────────────────►│ query projection │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │ 200 OK (finalized) │ │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> │◄──────────────────────│ │ │
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="stage-1-client-submit">Stage 1: Client Submit&lt;/h2>
+&lt;p>The client sends a &lt;code>POST /v1/transactions&lt;/code> request to the API Gateway.&lt;/p></description></item><item><title>Access Control</title><link>https://docs.sankofa.foundation/security/access-control/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/access-control/</guid><description>&lt;p>The Sankofa Engine enforces access control at three layers: application authentication, policy-based authorization, and infrastructure-level isolation. This page documents each layer.&lt;/p>
+&lt;h2 id="authentication">Authentication&lt;/h2>
+&lt;h3 id="api-key-provisioning">API Key Provisioning&lt;/h3>
+&lt;p>API keys are provisioned by Sankofa Labs during customer onboarding. Customers do not self-register or self-provision credentials.&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Step&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>1. Onboarding request&lt;/td>
+ &lt;td>Customer requests access through Sankofa Labs&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>2. Identity verification&lt;/td>
+ &lt;td>Sankofa Labs verifies the customer&amp;rsquo;s identity and authorization&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>3. Key generation&lt;/td>
+ &lt;td>A unique &lt;code>client_id&lt;/code> and &lt;code>client_secret&lt;/code> pair is generated&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>4. Secure delivery&lt;/td>
+ &lt;td>Credentials are delivered through a secure channel&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>5. Activation&lt;/td>
+ &lt;td>Credentials are activated in the target deployment&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="jwt-token-exchange">JWT Token Exchange&lt;/h3>
+&lt;p>Clients authenticate by exchanging their API key credentials for a JWT bearer token:&lt;/p></description></item><item><title>Data Model</title><link>https://docs.sankofa.foundation/reference/data-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/data-model/</guid><description>&lt;h2 id="entities">Entities&lt;/h2>
+&lt;h3 id="transaction">Transaction&lt;/h3>
+&lt;p>The central entity in the Sankofa Engine. Represents any ledger operation &amp;ndash; debits, credits, transfers, exchanges, minting, and burning.&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>account_id&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Account identifier. ASCII-only, max 128 characters, allowed: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>amount&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Transaction amount (string, not float &amp;ndash; see &lt;a href="https://docs.sankofa.foundation/reference/data-model/#amounts-as-strings">Amounts as Strings&lt;/a>). Max 18 integer + 18 decimal digits.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>type&lt;/code>&lt;/td>
+ &lt;td>enum&lt;/td>
+ &lt;td>Transaction type: &lt;code>debit&lt;/code>, &lt;code>credit&lt;/code>, &lt;code>transfer&lt;/code>, &lt;code>exchange&lt;/code>, &lt;code>mint&lt;/code>, &lt;code>burn&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>status&lt;/code>&lt;/td>
+ &lt;td>enum&lt;/td>
+ &lt;td>Processing status: &lt;code>pending&lt;/code>, &lt;code>completed&lt;/code>, &lt;code>failed&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>signature&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>ECDSA P-256 signature from the submitting client&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>shard_id&lt;/code>&lt;/td>
+ &lt;td>uint32&lt;/td>
+ &lt;td>Assigned shard (computed via FNV-1a hash of &lt;code>account_id&lt;/code>)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>idempotency_key&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Client-provided deduplication key&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>group_id&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>UUID linking related transactions (e.g., both sides of a transfer)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>token_id&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>Associated fungible token identifier&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>token_class&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>Associated NFT class identifier&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>audit_hash&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>SHA-256 hash chain entry for tamper detection&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>receipt_signature&lt;/code>&lt;/td>
+ &lt;td>bytes&lt;/td>
+ &lt;td>ECDSA P-256 DER-encoded receipt signature from the engine&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>created_at&lt;/code>&lt;/td>
+ &lt;td>datetime&lt;/td>
+ &lt;td>Creation timestamp&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="fungibletoken">FungibleToken&lt;/h3>
+&lt;p>Represents a fungible token definition (e.g., a currency or point system).&lt;/p></description></item><item><title>Self-Custody Signing</title><link>https://docs.sankofa.foundation/guides/self-custody/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/self-custody/</guid><description>&lt;p>This guide explains the self-custody signing model and walks through generating a keypair, signing transactions, and verifying receipts in Go, Python, and JavaScript.&lt;/p>
+&lt;h2 id="overview">Overview&lt;/h2>
+&lt;p>In the self-custody model, the account holder controls the signing key. Instead of delegating transaction authorization to Sankofa Labs, each transaction is signed with the account&amp;rsquo;s own ECDSA P-256 private key before submission. The engine verifies the signature against the public key registered during account setup.&lt;/p></description></item><item><title>Services</title><link>https://docs.sankofa.foundation/overview/services/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/services/</guid><description>&lt;p>Sankofa Engine is composed of seven microservices plus a shared health-check contract. Each service is independently deployable and communicates with other services exclusively through NATS JetStream.&lt;/p>
+&lt;h2 id="api-gateway">API Gateway&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Property&lt;/th>
+ &lt;th>Value&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Port&lt;/strong>&lt;/td>
+ &lt;td>8080 (HTTP) / 9090 (health)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Replicas&lt;/strong>&lt;/td>
+ &lt;td>2 + HPA&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Dependencies&lt;/strong>&lt;/td>
+ &lt;td>NATS&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>The API Gateway is the public REST API entry point for all client interactions with the Sankofa Engine.&lt;/p>
+&lt;p>&lt;strong>Key Responsibilities:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Request validation against JSON schemas&lt;/li>
+&lt;li>JWT authentication and ECDSA request signature verification&lt;/li>
+&lt;li>RBAC policy enforcement via Casbin&lt;/li>
+&lt;li>Rate limiting per tenant and per endpoint&lt;/li>
+&lt;li>FNV-1a shard routing — deterministically maps &lt;code>account_id&lt;/code> to the correct shard subject&lt;/li>
+&lt;li>NATS RPC proxying — publishes validated requests to JetStream and returns signed receipts to callers&lt;/li>
+&lt;/ul>
+&lt;h2 id="shard-worker">Shard Worker&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Property&lt;/th>
+ &lt;th>Value&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Port&lt;/strong>&lt;/td>
+ &lt;td>9090 (health only)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Replicas&lt;/strong>&lt;/td>
+ &lt;td>3 + HPA&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Dependencies&lt;/strong>&lt;/td>
+ &lt;td>NATS, ScyllaDB, OpenBao&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>Shard Workers are the core transaction-processing units. Each worker is assigned one or more shards by the Shard Orchestrator and processes all transactions routed to those shards.&lt;/p></description></item><item><title>Transactions</title><link>https://docs.sankofa.foundation/api-reference/transactions/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/transactions/</guid><description>&lt;p>The Transactions API lets you submit financial operations (debits, credits, transfers, exchanges, mints, and burns), check their processing status, and query transaction history. All transactions are processed asynchronously and are immutable once completed.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+
+
+&lt;div class="alert alert-warning" role="alert">
+&lt;h4 class="alert-heading">Important&lt;/h4>
+
+ All monetary amounts are represented as &lt;strong>strings&lt;/strong>, not numbers. This avoids IEEE 754 floating-point precision issues. For example, use &lt;code>&amp;quot;100.00&amp;quot;&lt;/code> instead of &lt;code>100.00&lt;/code>. Amounts are limited to 18 integer digits and 18 decimal digits.
+
+&lt;/div>
+
+
+
+&lt;div class="alert alert-info" role="alert">
+&lt;h4 class="alert-heading">Request Limits&lt;/h4>
+
+ All &lt;code>POST&lt;/code> requests must include the &lt;code>Content-Type: application/json&lt;/code> header. The maximum request body size is &lt;strong>1 MB&lt;/strong>.
+
+&lt;/div>
+
+&lt;h2 id="transaction-types">Transaction Types&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;th>Example Use Case&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>credit&lt;/code>&lt;/td>
+ &lt;td>Funds in — increases account balance&lt;/td>
+ &lt;td>Cash deposit, incoming wire&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>debit&lt;/code>&lt;/td>
+ &lt;td>Funds out — decreases account balance&lt;/td>
+ &lt;td>Withdrawal, fee deduction&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>transfer&lt;/code>&lt;/td>
+ &lt;td>Move between accounts (pair with &lt;code>group_id&lt;/code>)&lt;/td>
+ &lt;td>Internal account-to-account transfer&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>exchange&lt;/code>&lt;/td>
+ &lt;td>Asset swap between token types&lt;/td>
+ &lt;td>Currency conversion&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>mint&lt;/code>&lt;/td>
+ &lt;td>Create new token supply&lt;/td>
+ &lt;td>Token issuance&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>burn&lt;/code>&lt;/td>
+ &lt;td>Destroy token supply&lt;/td>
+ &lt;td>Token redemption&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="single-leg-vs-multi-leg-transactions">Single-Leg vs. Multi-Leg Transactions&lt;/h2>
+&lt;p>&lt;strong>Single-leg&lt;/strong> transactions operate on one account with no counterpart — a cash deposit (credit) or withdrawal (debit) where funds enter or leave the system.&lt;/p></description></item><item><title>Accounts</title><link>https://docs.sankofa.foundation/api-reference/accounts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/accounts/</guid><description>&lt;p>The Accounts API provides read-only access to account state, token balances, and NFT ownership. These endpoints are served from a PostgreSQL projection layer, which means they are fast but eventually consistent with the underlying ledger.&lt;/p>
+&lt;h3 id="account-id-format">Account ID Format&lt;/h3>
+&lt;p>Account identifiers must be ASCII-only, at most 128 characters, and may only contain: &lt;code>a-zA-Z0-9_.-:&lt;/code>. Requests with invalid account IDs are rejected with a &lt;strong>400 Bad Request&lt;/strong> error.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p></description></item><item><title>Audit Logging</title><link>https://docs.sankofa.foundation/security/audit-logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/audit-logging/</guid><description>&lt;p>The Sankofa Engine provides cryptographic guarantees of data integrity through three complementary mechanisms: SHA-256 audit hash chains, ECDSA P-256 signed receipts, and immutable event retention. Together, these mechanisms ensure that every transaction is independently verifiable and any tampering is detectable.&lt;/p>
+&lt;h2 id="sha-256-audit-hash-chain">SHA-256 Audit Hash Chain&lt;/h2>
+&lt;p>Every transaction processed by the Sankofa Engine extends the account&amp;rsquo;s audit hash chain. Each hash incorporates the previous hash, creating an append-only cryptographic log where modification of any entry invalidates all subsequent hashes.&lt;/p></description></item><item><title>Error Codes</title><link>https://docs.sankofa.foundation/reference/error-codes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/error-codes/</guid><description>&lt;h2 id="response-format">Response Format&lt;/h2>
+&lt;p>The Sankofa Engine returns errors using the &lt;strong>RFC 7807 Problem Details&lt;/strong> format. Every error response is a JSON object with a consistent structure:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#1f2328">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;type&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;https://api.sankofa.engine/errors/invalid-request&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;title&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;Bad Request&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;status&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0550ae">400&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;detail&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;amount must be a valid positive decimal number&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;error_codes&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#1f2328">[&lt;/span>&lt;span style="color:#0a3069">&amp;#34;ERR_INVALID_AMOUNT&amp;#34;&lt;/span>&lt;span style="color:#1f2328">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#1f2328">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="field-definitions">Field Definitions&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>type&lt;/code>&lt;/td>
+ &lt;td>string (URI)&lt;/td>
+ &lt;td>A URI that uniquely identifies the error category. Can be used as a stable reference in documentation and client error handling.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>title&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>A short, human-readable summary of the error category (e.g., &amp;ldquo;Bad Request&amp;rdquo;, &amp;ldquo;Not Found&amp;rdquo;).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>status&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>The HTTP status code for this response. Mirrors the HTTP response status.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>detail&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>A human-readable explanation specific to this occurrence of the error. Useful for debugging.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>error_codes&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>One or more machine-readable error codes. A single request may trigger multiple validation errors.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="error-code-reference">Error Code Reference&lt;/h2>
+&lt;h3 id="general">General&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NOT_FOUND&lt;/code>&lt;/td>
+ &lt;td>404&lt;/td>
+ &lt;td>Resource not found&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_CONFLICT&lt;/code>&lt;/td>
+ &lt;td>409&lt;/td>
+ &lt;td>Resource already exists (e.g., duplicate NFT mint, duplicate token symbol)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_PAYLOAD_TOO_LARGE&lt;/code>&lt;/td>
+ &lt;td>413&lt;/td>
+ &lt;td>Request body exceeds the 1 MB limit&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_UNSUPPORTED_CONTENT_TYPE&lt;/code>&lt;/td>
+ &lt;td>415&lt;/td>
+ &lt;td>Request must use &lt;code>Content-Type: application/json&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_SHARD_UNAVAILABLE&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>Shard ownership in flux — retry with backoff&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_DOWNSTREAM_FAILURE&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>An internal dependency is temporarily unavailable&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="transaction-validation">Transaction Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_ACCOUNT_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Account ID is missing or invalid. Must be ASCII-only, max 128 characters, allowed: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_AMOUNT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Amount is required and must be a valid positive decimal (max 18 integer + 18 decimal digits)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TYPE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Transaction type is required and must be a valid enum value (&lt;code>debit&lt;/code>, &lt;code>credit&lt;/code>, &lt;code>transfer&lt;/code>, &lt;code>exchange&lt;/code>, &lt;code>mint&lt;/code>, &lt;code>burn&lt;/code>)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SIGNATURE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Signature is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_IDEMPOTENCY_KEY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Idempotency key is required for all transaction submissions&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_GROUP_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Group ID must be a valid UUID&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_SELF_TRANSFER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Cannot transfer to the same account&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="token-validation">Token Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TOKEN_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Token ID is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SYMBOL&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Symbol is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_DECIMALS&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Decimal precision must be between 0 and 18&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_ISSUER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Issuer is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TOTAL_SUPPLY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Total supply must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_INITIAL_SUPPLY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Initial supply must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_BALANCE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Encrypted balance is required&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="nft-validation">NFT Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_CLASS_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>NFT class ID is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_NAME&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Name is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SCHEMA&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Metadata schema is required and must be valid JSON&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="shard-and-system-validation">Shard and System Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_HEALTH_STATE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Invalid shard health state&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TXN_COUNT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Transaction count must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NO_SHARDS&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>No shards configured&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NO_HEALTHY_SHARDS&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>No healthy shards available&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="audit-and-proof-validation">Audit and Proof Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_PROOF_HASH&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Proof hash is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_REQUESTER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Requester field is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_PROOF_SYSTEM&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Invalid proof system&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="timestamp-validation">Timestamp Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_CREATED_AT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>&lt;code>created_at&lt;/code> timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_UPDATED_AT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>&lt;code>updated_at&lt;/code> timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TIMESTAMP&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="error-handling-best-practices">Error Handling Best Practices&lt;/h2>
+&lt;h3 id="use-status-for-response-category">Use &lt;code>status&lt;/code> for Response Category&lt;/h3>
+&lt;p>Check the HTTP status code to determine the general category of the error:&lt;/p></description></item><item><title>NFT Lifecycle</title><link>https://docs.sankofa.foundation/guides/nft-lifecycle/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/nft-lifecycle/</guid><description>&lt;p>This guide walks through the complete lifecycle of a non-fungible token (NFT) in the Sankofa Engine: defining a class, minting instances, transferring ownership, querying provenance, and burning instances.&lt;/p>
+&lt;p>NFTs in the Sankofa Engine are organized into &lt;strong>classes&lt;/strong> and &lt;strong>instances&lt;/strong>. A class defines the schema and metadata structure (like a template), while instances are individual items minted from that class. Each instance has a unique owner and a full provenance chain tracked on the ledger.&lt;/p></description></item><item><title>Security Overview</title><link>https://docs.sankofa.foundation/overview/security/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/security/</guid><description>&lt;p>The Sankofa Engine implements defense-in-depth security across authentication, authorization, encryption, and audit logging. This page provides a high-level overview — for detailed documentation, see the &lt;a href="https://docs.sankofa.foundation/security/">Security &amp;amp; Compliance&lt;/a> section.&lt;/p>
+&lt;h2 id="security-architecture-summary">Security Architecture Summary&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Layer&lt;/th>
+ &lt;th>Implementation&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Authentication&lt;/strong>&lt;/td>
+ &lt;td>JWT tokens via API key exchange, ECDSA P-256 transaction signing for self-custody&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Authorization&lt;/strong>&lt;/td>
+ &lt;td>Casbin v2 RBAC with policy-based access control&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Encryption at Rest&lt;/strong>&lt;/td>
+ &lt;td>AES-GCM-256 envelope encryption with KMS-derived keys&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Encryption in Transit&lt;/strong>&lt;/td>
+ &lt;td>mTLS between services, TLS for client connections&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Audit Trail&lt;/strong>&lt;/td>
+ &lt;td>SHA-256 hash chains per account, ECDSA P-256 signed receipts&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Key Management&lt;/strong>&lt;/td>
+ &lt;td>OpenBao (Vault fork) transit backend, AWS KMS support&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Infrastructure&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes namespace isolation, network policies, secret scoping&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="detailed-documentation">Detailed Documentation&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/controls/">Security Controls&lt;/a> — SOC 2 Trust Service Criteria mapping&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/encryption/">Encryption&lt;/a> — Encryption at rest, in transit, and key management&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/access-control/">Access Control&lt;/a> — Authentication, authorization, and infrastructure access&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/audit-logging/">Audit Logging&lt;/a> — Hash chains, signed receipts, and event retention&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/data-residency/">Data Residency&lt;/a> — Storage tiers, retention policies, and archival&lt;/li>
+&lt;/ul></description></item><item><title>Compliance Proofs</title><link>https://docs.sankofa.foundation/guides/compliance-proofs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/guides/compliance-proofs/</guid><description>&lt;p>This guide covers generating and verifying zero-knowledge proofs (ZKPs) with the Sankofa Engine&amp;rsquo;s Compliance API. ZKPs enable privacy-preserving audits &amp;ndash; you can demonstrate regulatory compliance without disclosing sensitive ledger data.&lt;/p>
+&lt;h2 id="what-are-zero-knowledge-proofs">What Are Zero-Knowledge Proofs?&lt;/h2>
+&lt;p>A zero-knowledge proof is a cryptographic protocol that lets one party (the prover) convince another party (the verifier) that a statement is true, without revealing any information beyond the truth of the statement itself. The verifier learns nothing about the underlying data &amp;ndash; only that the claim is valid.&lt;/p></description></item><item><title>Data Residency &amp; Retention</title><link>https://docs.sankofa.foundation/security/data-residency/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/security/data-residency/</guid><description>&lt;p>The Sankofa Engine uses a multi-tier storage architecture to balance performance, cost, and regulatory compliance. This page documents where data resides, how long it is retained, and how it moves between tiers.&lt;/p>
+&lt;h2 id="storage-tiers">Storage Tiers&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Tier&lt;/th>
+ &lt;th>Technology&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;th>Default Retention&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Hot&lt;/strong>&lt;/td>
+ &lt;td>ScyllaDB 6.2&lt;/td>
+ &lt;td>Transaction ledger, account state&lt;/td>
+ &lt;td>Configurable (default 2 years)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Projection&lt;/strong>&lt;/td>
+ &lt;td>PostgreSQL 16&lt;/td>
+ &lt;td>CQRS read model (balances, query views)&lt;/td>
+ &lt;td>Current state (always up-to-date)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Cold&lt;/strong>&lt;/td>
+ &lt;td>S3 / Local filesystem&lt;/td>
+ &lt;td>Archived transactions&lt;/td>
+ &lt;td>Long-term (configurable)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Event Log&lt;/strong>&lt;/td>
+ &lt;td>NATS JetStream&lt;/td>
+ &lt;td>Transaction events, signed receipts&lt;/td>
+ &lt;td>7 years&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="tier-descriptions">Tier Descriptions&lt;/h3>
+&lt;p>&lt;strong>Hot Tier (ScyllaDB 6.2)&lt;/strong>
+The hot tier stores the active transaction ledger and account state. ScyllaDB provides low-latency reads and writes for real-time transaction processing. Data remains in the hot tier for the configured retention period (default 2 years) before becoming eligible for archival.&lt;/p></description></item><item><title>Tokens &amp; NFTs</title><link>https://docs.sankofa.foundation/api-reference/tokens/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/tokens/</guid><description>&lt;p>The Tokens API covers registration and querying of both fungible tokens and non-fungible tokens (NFTs). Fungible tokens represent interchangeable assets (currencies, loyalty points, carbon credits). NFTs represent unique items with individual provenance tracking.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+
+
+&lt;div class="alert alert-warning" role="alert">
+&lt;h4 class="alert-heading">Important&lt;/h4>
+
+ All numeric values representing quantities or supplies are encoded as &lt;strong>strings&lt;/strong> to avoid IEEE 754 floating-point precision issues. The &lt;code>decimals&lt;/code> field (0-18) defines the token&amp;rsquo;s precision.
+
+&lt;/div>
+
+&lt;hr>
+&lt;h2 id="fungible-tokens">Fungible Tokens&lt;/h2>
+&lt;h3 id="register-a-token">Register a Token&lt;/h3>
+&lt;p>&lt;strong>POST /v1/fungible-tokens&lt;/strong>&lt;/p></description></item><item><title>Compliance &amp; Attestations</title><link>https://docs.sankofa.foundation/api-reference/compliance/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/api-reference/compliance/</guid><description>&lt;p>The Compliance API enables privacy-preserving audits and verifiable attestations. Using zero-knowledge proofs (ZKPs), the Sankofa Engine can generate cryptographic assertions that prove specific facts about the ledger &amp;ndash; such as solvency or asset provenance &amp;ndash; without revealing the underlying data. This allows regulated entities to demonstrate compliance to auditors and regulators while preserving the confidentiality of individual account balances and transaction details.&lt;/p>
+&lt;p>For interactive exploration, see the &lt;a href="https://docs.sankofa.foundation/api-reference/swagger/">API Explorer&lt;/a>.&lt;/p>
+&lt;hr>
+&lt;h2 id="zero-knowledge-proof-assertions">Zero-Knowledge Proof Assertions&lt;/h2>
+&lt;p>The assertions API generates ZKP proofs that can be independently verified. Each proof is a cryptographic object that demonstrates a specific claim is true, without disclosing any of the private inputs used to construct it.&lt;/p></description></item><item><title>v0.2.0-alpha</title><link>https://docs.sankofa.foundation/changelog/v0.2.0-alpha/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/changelog/v0.2.0-alpha/</guid><description>&lt;h2 id="v020-alpha">v0.2.0-alpha&lt;/h2>
+&lt;p>&lt;strong>Release date:&lt;/strong> 2026-04-04
+&lt;strong>Status:&lt;/strong> Pre-release (Alpha)&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Security hardening, 14 bug fixes, and Settlement Service completion. This release resolves all known limitations from v0.1.0-alpha edge-case testing and hardens the API gateway against injection and abuse.&lt;/p>
+&lt;h3 id="security-hardening">Security Hardening&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>Account ID validation&lt;/strong> &amp;ndash; rejects Unicode homoglyphs, zero-width characters, SQL/CQL injection attempts. IDs must be ASCII-only, max 128 characters, allowed characters: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Amount precision limits&lt;/strong> &amp;ndash; amounts are validated to a maximum of 18 integer digits and 18 decimal digits&lt;/li>
+&lt;li>&lt;strong>Content-Type enforcement&lt;/strong> &amp;ndash; POST endpoints reject non-&lt;code>application/json&lt;/code> bodies&lt;/li>
+&lt;li>&lt;strong>Body size limit&lt;/strong> &amp;ndash; reduced from 10 MB to 1 MB to match NATS max payload&lt;/li>
+&lt;li>&lt;strong>Error sanitization&lt;/strong> &amp;ndash; internal error details (NATS, gocql, infrastructure) are never leaked in API responses. Downstream failures return 503 with a safe message.&lt;/li>
+&lt;li>&lt;strong>Error code matching&lt;/strong> &amp;ndash; switched from substring (&lt;code>Contains&lt;/code>) to prefix (&lt;code>HasPrefix&lt;/code>) matching to prevent partial-match information leaks&lt;/li>
+&lt;li>&lt;strong>Query parameter validation&lt;/strong> &amp;ndash; &lt;code>account_id&lt;/code>, &lt;code>amount_min&lt;/code>, &lt;code>amount_max&lt;/code>, &lt;code>date_from&lt;/code>, &lt;code>date_to&lt;/code>, and &lt;code>page_token&lt;/code> are validated on the transaction query endpoint. Dates must be RFC 3339; amounts must be valid decimals; page tokens are capped at 512 characters.&lt;/li>
+&lt;li>&lt;strong>Pagination cap&lt;/strong> &amp;ndash; &lt;code>page_size&lt;/code> is capped at 1000 across all list endpoints&lt;/li>
+&lt;/ul>
+&lt;h3 id="bug-fixes">Bug Fixes&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>KMS DEK cache pointer aliasing&lt;/strong> &amp;ndash; callers could mutate the shared cached DEK entry; now returns a copy&lt;/li>
+&lt;li>&lt;strong>NATS health check was a no-op&lt;/strong> &amp;ndash; readiness endpoint always reported NATS as healthy; now wired to actual connection status via &lt;code>IsConnected()&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Unnecessary &lt;code>ALLOW FILTERING&lt;/code>&lt;/strong> &amp;ndash; removed from partition-key-only ScyllaDB queries (&lt;code>GetTokenBySymbol&lt;/code>, &lt;code>ListBalancesForAccount&lt;/code>); added secondary indexes for &lt;code>txn_id&lt;/code>, &lt;code>symbol&lt;/code>, and &lt;code>account_id&lt;/code>&lt;/li>
+&lt;li>&lt;strong>&lt;code>GetTransaction&lt;/code> full-table scan&lt;/strong> &amp;ndash; created a secondary index on &lt;code>transactions(txn_id)&lt;/code> to replace &lt;code>ALLOW FILTERING&lt;/code>&lt;/li>
+&lt;li>&lt;strong>NFT InsertInstance not idempotent&lt;/strong> &amp;ndash; now uses &lt;code>IF NOT EXISTS&lt;/code> (LWT); duplicate mints return an error instead of silently succeeding&lt;/li>
+&lt;li>&lt;strong>NFT class duplicate name&lt;/strong> &amp;ndash; returns 409 Conflict instead of 500 Internal Server Error&lt;/li>
+&lt;li>&lt;strong>Shard consumer unbounded goroutines&lt;/strong> &amp;ndash; per-account processing goroutines are now capped with a CPU-bound semaphore&lt;/li>
+&lt;li>&lt;strong>Status batch update not retried&lt;/strong> &amp;ndash; added 3-attempt retry with 100ms backoff for status persistence&lt;/li>
+&lt;li>&lt;strong>Shard retry returned 404&lt;/strong> &amp;ndash; changed to 503 &lt;code>shard_unavailable&lt;/code> during ownership flux (404 is reserved for genuinely non-existent accounts)&lt;/li>
+&lt;li>&lt;strong>Shard pool size&lt;/strong> &amp;ndash; increased from 4 to 16 connections per shard session&lt;/li>
+&lt;li>&lt;strong>Debit from zero balance&lt;/strong> &amp;ndash; no longer loops indefinitely; the transaction is acked and marked as failed&lt;/li>
+&lt;li>&lt;strong>Missing RPC handlers&lt;/strong> &amp;ndash; added handlers for &lt;code>RPC.account.query.transactions&lt;/code>, attestation RPCs, and storage metrics&lt;/li>
+&lt;/ul>
+&lt;h3 id="settlement-service">Settlement Service&lt;/h3>
+&lt;p>The Settlement Service is no longer a skeleton. It now provides:&lt;/p></description></item><item><title>v0.1.0-alpha</title><link>https://docs.sankofa.foundation/changelog/v0.1.0-alpha/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/changelog/v0.1.0-alpha/</guid><description>&lt;h2 id="v010-alpha">v0.1.0-alpha&lt;/h2>
+&lt;p>&lt;strong>Release date:&lt;/strong> 2026-04-03
+&lt;strong>Status:&lt;/strong> Pre-release (Alpha)&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Initial alpha release of the Sankofa Engine — a sharded, privacy-preserving financial ledger engine for digital assets.&lt;/p>
+&lt;h3 id="features">Features&lt;/h3>
+&lt;h4 id="core-ledger">Core Ledger&lt;/h4>
+&lt;ul>
+&lt;li>Sharded transaction processing with FNV-1a hash-based routing&lt;/li>
+&lt;li>Block-based transaction batching with in-memory balance cache&lt;/li>
+&lt;li>SHA-256 audit hash chain per account&lt;/li>
+&lt;li>ECDSA P-256 signed transaction receipts&lt;/li>
+&lt;li>Exactly-once processing via NATS JetStream deduplication and idempotency keys&lt;/li>
+&lt;/ul>
+&lt;h4 id="multi-asset-support">Multi-Asset Support&lt;/h4>
+&lt;ul>
+&lt;li>Fungible token registration, minting, burning, and transfer&lt;/li>
+&lt;li>NFT class registration, instance minting, transfer, burn, and provenance tracking&lt;/li>
+&lt;/ul>
+&lt;h4 id="privacy--compliance">Privacy &amp;amp; Compliance&lt;/h4>
+&lt;ul>
+&lt;li>AES-GCM-256 envelope encryption with KMS-derived keys&lt;/li>
+&lt;li>Zero-knowledge proof generation: proof-of-liabilities, proof-of-provenance, proof-of-compliance&lt;/li>
+&lt;li>Proof verification endpoint&lt;/li>
+&lt;li>Asset attestation support&lt;/li>
+&lt;/ul>
+&lt;h4 id="api">API&lt;/h4>
+&lt;ul>
+&lt;li>REST API via Fiber v3 with JWT authentication&lt;/li>
+&lt;li>ECDSA P-256 transaction signing for self-custody model&lt;/li>
+&lt;li>RFC 7807 Problem Details error format&lt;/li>
+&lt;li>Casbin v2 RBAC authorization&lt;/li>
+&lt;/ul>
+&lt;h4 id="infrastructure">Infrastructure&lt;/h4>
+&lt;ul>
+&lt;li>8 microservices: API Gateway, Shard Worker, Shard Orchestrator, Projection, Compliance, Settlement, Archival, DevCtl&lt;/li>
+&lt;li>Kubernetes-native deployment with HPA, health probes, network policies&lt;/li>
+&lt;li>ScyllaDB (ledger), PostgreSQL (projections), NATS JetStream (messaging), OpenBao (key management)&lt;/li>
+&lt;li>Hot/cold tier archival with configurable retention policies&lt;/li>
+&lt;/ul>
+&lt;h3 id="known-issues">Known Issues&lt;/h3>
+&lt;ul>
+&lt;li>OpenBao KMS service integration is in progress&lt;/li>
+&lt;li>ZKP backend is placeholder — proof generation logic is stubbed&lt;/li>
+&lt;li>Durable Local Queue (NATS failover buffer) is not implemented — messages published while NATS is disconnected will be lost until reconnection&lt;/li>
+&lt;/ul>
+&lt;h3 id="dependencies">Dependencies&lt;/h3>
+&lt;ul>
+&lt;li>Go 1.25+&lt;/li>
+&lt;li>ScyllaDB 6.2&lt;/li>
+&lt;li>PostgreSQL 16&lt;/li>
+&lt;li>NATS 2.11+ with JetStream&lt;/li>
+&lt;li>OpenBao (Vault fork)&lt;/li>
+&lt;/ul>
+&lt;h3 id="breaking-changes">Breaking Changes&lt;/h3>
+&lt;p>None — initial release.&lt;/p></description></item></channel></rss>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Changelog on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/changelog/</link><description>Recent content in Changelog on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/changelog/index.xml" rel="self" type="application/rss+xml"/><item><title>v0.2.0-alpha</title><link>https://docs.sankofa.foundation/changelog/v0.2.0-alpha/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/changelog/v0.2.0-alpha/</guid><description>&lt;h2 id="v020-alpha">v0.2.0-alpha&lt;/h2>
+&lt;p>&lt;strong>Release date:&lt;/strong> 2026-04-04
+&lt;strong>Status:&lt;/strong> Pre-release (Alpha)&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Security hardening, 14 bug fixes, and Settlement Service completion. This release resolves all known limitations from v0.1.0-alpha edge-case testing and hardens the API gateway against injection and abuse.&lt;/p>
+&lt;h3 id="security-hardening">Security Hardening&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>Account ID validation&lt;/strong> &amp;ndash; rejects Unicode homoglyphs, zero-width characters, SQL/CQL injection attempts. IDs must be ASCII-only, max 128 characters, allowed characters: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Amount precision limits&lt;/strong> &amp;ndash; amounts are validated to a maximum of 18 integer digits and 18 decimal digits&lt;/li>
+&lt;li>&lt;strong>Content-Type enforcement&lt;/strong> &amp;ndash; POST endpoints reject non-&lt;code>application/json&lt;/code> bodies&lt;/li>
+&lt;li>&lt;strong>Body size limit&lt;/strong> &amp;ndash; reduced from 10 MB to 1 MB to match NATS max payload&lt;/li>
+&lt;li>&lt;strong>Error sanitization&lt;/strong> &amp;ndash; internal error details (NATS, gocql, infrastructure) are never leaked in API responses. Downstream failures return 503 with a safe message.&lt;/li>
+&lt;li>&lt;strong>Error code matching&lt;/strong> &amp;ndash; switched from substring (&lt;code>Contains&lt;/code>) to prefix (&lt;code>HasPrefix&lt;/code>) matching to prevent partial-match information leaks&lt;/li>
+&lt;li>&lt;strong>Query parameter validation&lt;/strong> &amp;ndash; &lt;code>account_id&lt;/code>, &lt;code>amount_min&lt;/code>, &lt;code>amount_max&lt;/code>, &lt;code>date_from&lt;/code>, &lt;code>date_to&lt;/code>, and &lt;code>page_token&lt;/code> are validated on the transaction query endpoint. Dates must be RFC 3339; amounts must be valid decimals; page tokens are capped at 512 characters.&lt;/li>
+&lt;li>&lt;strong>Pagination cap&lt;/strong> &amp;ndash; &lt;code>page_size&lt;/code> is capped at 1000 across all list endpoints&lt;/li>
+&lt;/ul>
+&lt;h3 id="bug-fixes">Bug Fixes&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>KMS DEK cache pointer aliasing&lt;/strong> &amp;ndash; callers could mutate the shared cached DEK entry; now returns a copy&lt;/li>
+&lt;li>&lt;strong>NATS health check was a no-op&lt;/strong> &amp;ndash; readiness endpoint always reported NATS as healthy; now wired to actual connection status via &lt;code>IsConnected()&lt;/code>&lt;/li>
+&lt;li>&lt;strong>Unnecessary &lt;code>ALLOW FILTERING&lt;/code>&lt;/strong> &amp;ndash; removed from partition-key-only ScyllaDB queries (&lt;code>GetTokenBySymbol&lt;/code>, &lt;code>ListBalancesForAccount&lt;/code>); added secondary indexes for &lt;code>txn_id&lt;/code>, &lt;code>symbol&lt;/code>, and &lt;code>account_id&lt;/code>&lt;/li>
+&lt;li>&lt;strong>&lt;code>GetTransaction&lt;/code> full-table scan&lt;/strong> &amp;ndash; created a secondary index on &lt;code>transactions(txn_id)&lt;/code> to replace &lt;code>ALLOW FILTERING&lt;/code>&lt;/li>
+&lt;li>&lt;strong>NFT InsertInstance not idempotent&lt;/strong> &amp;ndash; now uses &lt;code>IF NOT EXISTS&lt;/code> (LWT); duplicate mints return an error instead of silently succeeding&lt;/li>
+&lt;li>&lt;strong>NFT class duplicate name&lt;/strong> &amp;ndash; returns 409 Conflict instead of 500 Internal Server Error&lt;/li>
+&lt;li>&lt;strong>Shard consumer unbounded goroutines&lt;/strong> &amp;ndash; per-account processing goroutines are now capped with a CPU-bound semaphore&lt;/li>
+&lt;li>&lt;strong>Status batch update not retried&lt;/strong> &amp;ndash; added 3-attempt retry with 100ms backoff for status persistence&lt;/li>
+&lt;li>&lt;strong>Shard retry returned 404&lt;/strong> &amp;ndash; changed to 503 &lt;code>shard_unavailable&lt;/code> during ownership flux (404 is reserved for genuinely non-existent accounts)&lt;/li>
+&lt;li>&lt;strong>Shard pool size&lt;/strong> &amp;ndash; increased from 4 to 16 connections per shard session&lt;/li>
+&lt;li>&lt;strong>Debit from zero balance&lt;/strong> &amp;ndash; no longer loops indefinitely; the transaction is acked and marked as failed&lt;/li>
+&lt;li>&lt;strong>Missing RPC handlers&lt;/strong> &amp;ndash; added handlers for &lt;code>RPC.account.query.transactions&lt;/code>, attestation RPCs, and storage metrics&lt;/li>
+&lt;/ul>
+&lt;h3 id="settlement-service">Settlement Service&lt;/h3>
+&lt;p>The Settlement Service is no longer a skeleton. It now provides:&lt;/p></description></item><item><title>v0.1.0-alpha</title><link>https://docs.sankofa.foundation/changelog/v0.1.0-alpha/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/changelog/v0.1.0-alpha/</guid><description>&lt;h2 id="v010-alpha">v0.1.0-alpha&lt;/h2>
+&lt;p>&lt;strong>Release date:&lt;/strong> 2026-04-03
+&lt;strong>Status:&lt;/strong> Pre-release (Alpha)&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Initial alpha release of the Sankofa Engine — a sharded, privacy-preserving financial ledger engine for digital assets.&lt;/p>
+&lt;h3 id="features">Features&lt;/h3>
+&lt;h4 id="core-ledger">Core Ledger&lt;/h4>
+&lt;ul>
+&lt;li>Sharded transaction processing with FNV-1a hash-based routing&lt;/li>
+&lt;li>Block-based transaction batching with in-memory balance cache&lt;/li>
+&lt;li>SHA-256 audit hash chain per account&lt;/li>
+&lt;li>ECDSA P-256 signed transaction receipts&lt;/li>
+&lt;li>Exactly-once processing via NATS JetStream deduplication and idempotency keys&lt;/li>
+&lt;/ul>
+&lt;h4 id="multi-asset-support">Multi-Asset Support&lt;/h4>
+&lt;ul>
+&lt;li>Fungible token registration, minting, burning, and transfer&lt;/li>
+&lt;li>NFT class registration, instance minting, transfer, burn, and provenance tracking&lt;/li>
+&lt;/ul>
+&lt;h4 id="privacy--compliance">Privacy &amp;amp; Compliance&lt;/h4>
+&lt;ul>
+&lt;li>AES-GCM-256 envelope encryption with KMS-derived keys&lt;/li>
+&lt;li>Zero-knowledge proof generation: proof-of-liabilities, proof-of-provenance, proof-of-compliance&lt;/li>
+&lt;li>Proof verification endpoint&lt;/li>
+&lt;li>Asset attestation support&lt;/li>
+&lt;/ul>
+&lt;h4 id="api">API&lt;/h4>
+&lt;ul>
+&lt;li>REST API via Fiber v3 with JWT authentication&lt;/li>
+&lt;li>ECDSA P-256 transaction signing for self-custody model&lt;/li>
+&lt;li>RFC 7807 Problem Details error format&lt;/li>
+&lt;li>Casbin v2 RBAC authorization&lt;/li>
+&lt;/ul>
+&lt;h4 id="infrastructure">Infrastructure&lt;/h4>
+&lt;ul>
+&lt;li>8 microservices: API Gateway, Shard Worker, Shard Orchestrator, Projection, Compliance, Settlement, Archival, DevCtl&lt;/li>
+&lt;li>Kubernetes-native deployment with HPA, health probes, network policies&lt;/li>
+&lt;li>ScyllaDB (ledger), PostgreSQL (projections), NATS JetStream (messaging), OpenBao (key management)&lt;/li>
+&lt;li>Hot/cold tier archival with configurable retention policies&lt;/li>
+&lt;/ul>
+&lt;h3 id="known-issues">Known Issues&lt;/h3>
+&lt;ul>
+&lt;li>OpenBao KMS service integration is in progress&lt;/li>
+&lt;li>ZKP backend is placeholder — proof generation logic is stubbed&lt;/li>
+&lt;li>Durable Local Queue (NATS failover buffer) is not implemented — messages published while NATS is disconnected will be lost until reconnection&lt;/li>
+&lt;/ul>
+&lt;h3 id="dependencies">Dependencies&lt;/h3>
+&lt;ul>
+&lt;li>Go 1.25+&lt;/li>
+&lt;li>ScyllaDB 6.2&lt;/li>
+&lt;li>PostgreSQL 16&lt;/li>
+&lt;li>NATS 2.11+ with JetStream&lt;/li>
+&lt;li>OpenBao (Vault fork)&lt;/li>
+&lt;/ul>
+&lt;h3 id="breaking-changes">Breaking Changes&lt;/h3>
+&lt;p>None — initial release.&lt;/p></description></item></channel></rss>

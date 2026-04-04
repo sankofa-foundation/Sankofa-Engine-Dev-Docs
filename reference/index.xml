@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Technical Reference on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/reference/</link><description>Recent content in Technical Reference on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/reference/index.xml" rel="self" type="application/rss+xml"/><item><title>Configuration</title><link>https://docs.sankofa.foundation/reference/configuration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/configuration/</guid><description>&lt;h2 id="configuration-schema">Configuration Schema&lt;/h2>
+&lt;p>The Sankofa Engine is configured via a YAML file (default path: &lt;code>config.yaml&lt;/code>). Below is the complete schema with all supported fields.&lt;/p>
+&lt;h3 id="default-configuration">Default Configuration&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#0550ae">shard_count&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">4&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">nats&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">cluster_urls&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>- &lt;span style="color:#0a3069">&amp;#34;nats://localhost:4222&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">jetstream&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">max_message_age_seconds&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">220898160&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#57606a"># 7 years&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">scylladb&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">endpoints&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>- &lt;span style="color:#0a3069">&amp;#34;localhost:9042&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">keyspace&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;sankofa_engine&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">read_consistency&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;ONE&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">request_timeout&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;30s&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">kms&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">provider&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;local&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">region&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;us-east-1&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">openbao&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">address&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;http://localhost:8200&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">token&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;dev-root-token&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">transit_mount&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;transit&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff">&lt;/span>&lt;span style="color:#0550ae">service&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">name&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;monolith&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0550ae">id&lt;/span>&lt;span style="color:#1f2328">:&lt;/span>&lt;span style="color:#fff"> &lt;/span>&lt;span style="color:#0a3069">&amp;#34;&amp;#34;&lt;/span>&lt;span style="color:#fff">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="field-reference">Field Reference&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field Path&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Default&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>shard_count&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>&lt;code>4&lt;/code>&lt;/td>
+ &lt;td>Number of shards for partitioning transactions across workers. Determines the modulus for FNV-1a shard routing.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>nats.cluster_urls&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>&lt;code>[&amp;quot;nats://localhost:4222&amp;quot;]&lt;/code>&lt;/td>
+ &lt;td>List of NATS server URLs for the client to connect to. Supports multiple URLs for cluster failover.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>nats.jetstream.max_message_age_seconds&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>&lt;code>220898160&lt;/code> (7 years)&lt;/td>
+ &lt;td>Maximum age in seconds before JetStream messages are expired. Set to 7 years for long-term audit retention.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.endpoints&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>&lt;code>[&amp;quot;localhost:9042&amp;quot;]&lt;/code>&lt;/td>
+ &lt;td>ScyllaDB/Cassandra contact points. The driver discovers additional nodes from these seeds.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.keyspace&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;sankofa_engine&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>ScyllaDB keyspace name where all tables reside.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.read_consistency&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;ONE&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Read consistency level. Common values: &lt;code>ONE&lt;/code>, &lt;code>QUORUM&lt;/code>, &lt;code>LOCAL_QUORUM&lt;/code>.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>scylladb.request_timeout&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;30s&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Timeout for individual ScyllaDB requests. Go duration format (e.g., &lt;code>30s&lt;/code>, &lt;code>1m&lt;/code>).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>kms.provider&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;local&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Key management provider. &lt;code>&amp;quot;local&amp;quot;&lt;/code> for development, &lt;code>&amp;quot;aws&amp;quot;&lt;/code> for AWS KMS in production.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>kms.region&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;us-east-1&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Cloud provider region for the KMS service.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.address&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;http://localhost:8200&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>OpenBao (Vault-compatible) server address for transit encryption.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.token&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;dev-root-token&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Authentication token for OpenBao. Use a provisioned secret in production.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>openbao.transit_mount&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;transit&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Mount path for the OpenBao transit secrets engine.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>service.name&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;monolith&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Service identity. Used for logging, metrics, and NATS subject routing. Values: &lt;code>monolith&lt;/code>, &lt;code>api&lt;/code>, &lt;code>shard-worker&lt;/code>.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>service.id&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>&lt;code>&amp;quot;&amp;quot;&lt;/code>&lt;/td>
+ &lt;td>Unique instance identifier. Used to distinguish multiple instances of the same service.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="environment-variable-overrides">Environment Variable Overrides&lt;/h2>
+&lt;p>Environment variables take precedence over values in the config file. Use these to configure the engine in containerized or orchestrated environments.&lt;/p></description></item><item><title>Libraries &amp; Dependencies</title><link>https://docs.sankofa.foundation/reference/libraries/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/libraries/</guid><description>&lt;p>The Sankofa Engine is written in Go and requires &lt;strong>Go 1.25 or later&lt;/strong>. Below are all direct dependencies from &lt;code>go.mod&lt;/code>, grouped by category.&lt;/p>
+&lt;h2 id="http-framework">HTTP Framework&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/gofiber/fiber/v3&lt;/code>&lt;/td>
+ &lt;td>v3.1.0&lt;/td>
+ &lt;td>HTTP framework for the REST API&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="database">Database&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/gocql/gocql&lt;/code>&lt;/td>
+ &lt;td>v1.7.0&lt;/td>
+ &lt;td>ScyllaDB/Cassandra driver&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/jackc/pgx/v5&lt;/code>&lt;/td>
+ &lt;td>v5.9.1&lt;/td>
+ &lt;td>PostgreSQL driver with connection pooling&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="messaging">Messaging&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/nats-io/nats.go&lt;/code>&lt;/td>
+ &lt;td>v1.49.0&lt;/td>
+ &lt;td>NATS client for pub/sub and RPC&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/nats-io/nats-server/v2&lt;/code>&lt;/td>
+ &lt;td>v2.12.6&lt;/td>
+ &lt;td>Embedded NATS server for testing&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="authentication-and-authorization">Authentication and Authorization&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/golang-jwt/jwt/v5&lt;/code>&lt;/td>
+ &lt;td>v5.3.1&lt;/td>
+ &lt;td>JWT token generation and validation&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/casbin/casbin/v2&lt;/code>&lt;/td>
+ &lt;td>v2.135.0&lt;/td>
+ &lt;td>Role-based access control (RBAC)&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cryptography">Cryptography&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>golang.org/x/crypto&lt;/code>&lt;/td>
+ &lt;td>v0.49.0&lt;/td>
+ &lt;td>Cryptographic primitives&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="cloud-services">Cloud Services&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/aws/aws-sdk-go-v2/config&lt;/code>&lt;/td>
+ &lt;td>v1.29.5&lt;/td>
+ &lt;td>AWS SDK configuration&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/aws/aws-sdk-go-v2/service/kms&lt;/code>&lt;/td>
+ &lt;td>v1.43.0&lt;/td>
+ &lt;td>AWS KMS for key management&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="utilities">Utilities&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/google/uuid&lt;/code>&lt;/td>
+ &lt;td>v1.6.0&lt;/td>
+ &lt;td>UUID generation&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/shirou/gopsutil/v3&lt;/code>&lt;/td>
+ &lt;td>v3.24.5&lt;/td>
+ &lt;td>System metrics collection&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>golang.org/x/time&lt;/code>&lt;/td>
+ &lt;td>v0.15.0&lt;/td>
+ &lt;td>Rate limiting&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>gopkg.in/yaml.v3&lt;/code>&lt;/td>
+ &lt;td>v3.0.1&lt;/td>
+ &lt;td>YAML configuration parsing&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="testing">Testing&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Package&lt;/th>
+ &lt;th>Version&lt;/th>
+ &lt;th>Purpose&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>github.com/stretchr/testify&lt;/code>&lt;/td>
+ &lt;td>v1.11.1&lt;/td>
+ &lt;td>Testing assertions and mocks&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="dependency-management">Dependency Management&lt;/h2>
+&lt;p>The project uses Go modules (&lt;code>go.mod&lt;/code> / &lt;code>go.sum&lt;/code>) for dependency management. To update dependencies:&lt;/p></description></item><item><title>Data Model</title><link>https://docs.sankofa.foundation/reference/data-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/data-model/</guid><description>&lt;h2 id="entities">Entities&lt;/h2>
+&lt;h3 id="transaction">Transaction&lt;/h3>
+&lt;p>The central entity in the Sankofa Engine. Represents any ledger operation &amp;ndash; debits, credits, transfers, exchanges, minting, and burning.&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>account_id&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Account identifier. ASCII-only, max 128 characters, allowed: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>amount&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Transaction amount (string, not float &amp;ndash; see &lt;a href="https://docs.sankofa.foundation/reference/data-model/#amounts-as-strings">Amounts as Strings&lt;/a>). Max 18 integer + 18 decimal digits.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>type&lt;/code>&lt;/td>
+ &lt;td>enum&lt;/td>
+ &lt;td>Transaction type: &lt;code>debit&lt;/code>, &lt;code>credit&lt;/code>, &lt;code>transfer&lt;/code>, &lt;code>exchange&lt;/code>, &lt;code>mint&lt;/code>, &lt;code>burn&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>status&lt;/code>&lt;/td>
+ &lt;td>enum&lt;/td>
+ &lt;td>Processing status: &lt;code>pending&lt;/code>, &lt;code>completed&lt;/code>, &lt;code>failed&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>signature&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>ECDSA P-256 signature from the submitting client&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>shard_id&lt;/code>&lt;/td>
+ &lt;td>uint32&lt;/td>
+ &lt;td>Assigned shard (computed via FNV-1a hash of &lt;code>account_id&lt;/code>)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>idempotency_key&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>Client-provided deduplication key&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>group_id&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>UUID linking related transactions (e.g., both sides of a transfer)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>token_id&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>Associated fungible token identifier&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>token_class&lt;/code>&lt;/td>
+ &lt;td>string (optional)&lt;/td>
+ &lt;td>Associated NFT class identifier&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>audit_hash&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>SHA-256 hash chain entry for tamper detection&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>receipt_signature&lt;/code>&lt;/td>
+ &lt;td>bytes&lt;/td>
+ &lt;td>ECDSA P-256 DER-encoded receipt signature from the engine&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>created_at&lt;/code>&lt;/td>
+ &lt;td>datetime&lt;/td>
+ &lt;td>Creation timestamp&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="fungibletoken">FungibleToken&lt;/h3>
+&lt;p>Represents a fungible token definition (e.g., a currency or point system).&lt;/p></description></item><item><title>Error Codes</title><link>https://docs.sankofa.foundation/reference/error-codes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/reference/error-codes/</guid><description>&lt;h2 id="response-format">Response Format&lt;/h2>
+&lt;p>The Sankofa Engine returns errors using the &lt;strong>RFC 7807 Problem Details&lt;/strong> format. Every error response is a JSON object with a consistent structure:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#1f2328">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;type&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;https://api.sankofa.engine/errors/invalid-request&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;title&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;Bad Request&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;status&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0550ae">400&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;detail&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#0a3069">&amp;#34;amount must be a valid positive decimal number&amp;#34;&lt;/span>&lt;span style="color:#1f2328">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#0550ae">&amp;#34;error_codes&amp;#34;&lt;/span>&lt;span style="color:#1f2328">:&lt;/span> &lt;span style="color:#1f2328">[&lt;/span>&lt;span style="color:#0a3069">&amp;#34;ERR_INVALID_AMOUNT&amp;#34;&lt;/span>&lt;span style="color:#1f2328">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#1f2328">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="field-definitions">Field Definitions&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Field&lt;/th>
+ &lt;th>Type&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>type&lt;/code>&lt;/td>
+ &lt;td>string (URI)&lt;/td>
+ &lt;td>A URI that uniquely identifies the error category. Can be used as a stable reference in documentation and client error handling.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>title&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>A short, human-readable summary of the error category (e.g., &amp;ldquo;Bad Request&amp;rdquo;, &amp;ldquo;Not Found&amp;rdquo;).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>status&lt;/code>&lt;/td>
+ &lt;td>integer&lt;/td>
+ &lt;td>The HTTP status code for this response. Mirrors the HTTP response status.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>detail&lt;/code>&lt;/td>
+ &lt;td>string&lt;/td>
+ &lt;td>A human-readable explanation specific to this occurrence of the error. Useful for debugging.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>error_codes&lt;/code>&lt;/td>
+ &lt;td>[]string&lt;/td>
+ &lt;td>One or more machine-readable error codes. A single request may trigger multiple validation errors.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="error-code-reference">Error Code Reference&lt;/h2>
+&lt;h3 id="general">General&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NOT_FOUND&lt;/code>&lt;/td>
+ &lt;td>404&lt;/td>
+ &lt;td>Resource not found&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_CONFLICT&lt;/code>&lt;/td>
+ &lt;td>409&lt;/td>
+ &lt;td>Resource already exists (e.g., duplicate NFT mint, duplicate token symbol)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_PAYLOAD_TOO_LARGE&lt;/code>&lt;/td>
+ &lt;td>413&lt;/td>
+ &lt;td>Request body exceeds the 1 MB limit&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_UNSUPPORTED_CONTENT_TYPE&lt;/code>&lt;/td>
+ &lt;td>415&lt;/td>
+ &lt;td>Request must use &lt;code>Content-Type: application/json&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_SHARD_UNAVAILABLE&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>Shard ownership in flux — retry with backoff&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_DOWNSTREAM_FAILURE&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>An internal dependency is temporarily unavailable&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="transaction-validation">Transaction Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_ACCOUNT_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Account ID is missing or invalid. Must be ASCII-only, max 128 characters, allowed: &lt;code>a-zA-Z0-9_.-:&lt;/code>&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_AMOUNT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Amount is required and must be a valid positive decimal (max 18 integer + 18 decimal digits)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TYPE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Transaction type is required and must be a valid enum value (&lt;code>debit&lt;/code>, &lt;code>credit&lt;/code>, &lt;code>transfer&lt;/code>, &lt;code>exchange&lt;/code>, &lt;code>mint&lt;/code>, &lt;code>burn&lt;/code>)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SIGNATURE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Signature is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_IDEMPOTENCY_KEY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Idempotency key is required for all transaction submissions&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_GROUP_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Group ID must be a valid UUID&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_SELF_TRANSFER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Cannot transfer to the same account&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="token-validation">Token Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TOKEN_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Token ID is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SYMBOL&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Symbol is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_DECIMALS&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Decimal precision must be between 0 and 18&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_ISSUER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Issuer is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TOTAL_SUPPLY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Total supply must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_INITIAL_SUPPLY&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Initial supply must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_BALANCE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Encrypted balance is required&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="nft-validation">NFT Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_CLASS_ID&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>NFT class ID is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_NAME&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Name is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_SCHEMA&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Metadata schema is required and must be valid JSON&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="shard-and-system-validation">Shard and System Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_HEALTH_STATE&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Invalid shard health state&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TXN_COUNT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Transaction count must be non-negative&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NO_SHARDS&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>No shards configured&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_NO_HEALTHY_SHARDS&lt;/code>&lt;/td>
+ &lt;td>503&lt;/td>
+ &lt;td>No healthy shards available&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="audit-and-proof-validation">Audit and Proof Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_PROOF_HASH&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Proof hash is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_REQUESTER&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Requester field is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_PROOF_SYSTEM&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Invalid proof system&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h3 id="timestamp-validation">Timestamp Validation&lt;/h3>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Code&lt;/th>
+ &lt;th>HTTP Status&lt;/th>
+ &lt;th>Description&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_CREATED_AT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>&lt;code>created_at&lt;/code> timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_UPDATED_AT&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>&lt;code>updated_at&lt;/code> timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;code>ERR_INVALID_TIMESTAMP&lt;/code>&lt;/td>
+ &lt;td>400&lt;/td>
+ &lt;td>Timestamp is required&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="error-handling-best-practices">Error Handling Best Practices&lt;/h2>
+&lt;h3 id="use-status-for-response-category">Use &lt;code>status&lt;/code> for Response Category&lt;/h3>
+&lt;p>Check the HTTP status code to determine the general category of the error:&lt;/p></description></item></channel></rss>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Overview on Sankofa Engine Documentation</title><link>https://docs.sankofa.foundation/overview/</link><description>Recent content in Overview on Sankofa Engine Documentation</description><generator>Hugo</generator><language>en</language><atom:link href="https://docs.sankofa.foundation/overview/index.xml" rel="self" type="application/rss+xml"/><item><title>Introduction</title><link>https://docs.sankofa.foundation/overview/introduction/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/introduction/</guid><description>&lt;h2 id="what-is-sankofa-engine">What is Sankofa Engine&lt;/h2>
+&lt;p>Sankofa Engine is a &lt;strong>sharded, privacy-preserving financial ledger engine&lt;/strong> purpose-built for digital assets. It delivers cryptographically auditable transaction processing with zero-knowledge proof capabilities, enabling organizations to operate compliant, high-throughput ledger infrastructure without exposing sensitive financial data.&lt;/p>
+&lt;p>Traditional ledger systems force a choice between transparency and privacy. Sankofa Engine eliminates that trade-off: every transaction is recorded in a tamper-evident hash chain and signed with a cryptographic receipt, while encrypted balances and ZKP assertions ensure that only authorized parties can observe account state.&lt;/p></description></item><item><title>Architecture</title><link>https://docs.sankofa.foundation/overview/architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/architecture/</guid><description>&lt;h2 id="architectural-style">Architectural Style&lt;/h2>
+&lt;p>Sankofa Engine follows &lt;strong>Hexagonal Architecture&lt;/strong> (Ports &amp;amp; Adapters) combined with &lt;strong>Domain-Driven Design&lt;/strong> (DDD). This separation ensures the business logic remains independent of infrastructure concerns and can be tested, reviewed, and evolved without touching database drivers, message brokers, or HTTP frameworks.&lt;/p>
+&lt;p>The codebase is organized into four layers:&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Layer&lt;/th>
+ &lt;th>Path&lt;/th>
+ &lt;th>Responsibility&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Domain Core&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/core/&lt;/code>&lt;/td>
+ &lt;td>Pure business logic and domain models. Zero infrastructure dependencies.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Ports&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/core/port/&lt;/code>&lt;/td>
+ &lt;td>Go interfaces that define contracts between the domain and the outside world (e.g., &lt;code>LedgerRepository&lt;/code>, &lt;code>EventPublisher&lt;/code>).&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Adapters&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/adapter/&lt;/code>&lt;/td>
+ &lt;td>Concrete implementations of ports — ScyllaDB repositories, NATS publishers, OpenBao key providers, etc.&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Services&lt;/strong>&lt;/td>
+ &lt;td>&lt;code>internal/service/&lt;/code>&lt;/td>
+ &lt;td>Application services that orchestrate domain operations, coordinate across ports, and enforce transaction boundaries.&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>Dependencies always point inward: adapters depend on ports, ports depend on domain types, and the domain core depends on nothing external.&lt;/p></description></item><item><title>Services</title><link>https://docs.sankofa.foundation/overview/services/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/services/</guid><description>&lt;p>Sankofa Engine is composed of seven microservices plus a shared health-check contract. Each service is independently deployable and communicates with other services exclusively through NATS JetStream.&lt;/p>
+&lt;h2 id="api-gateway">API Gateway&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Property&lt;/th>
+ &lt;th>Value&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Port&lt;/strong>&lt;/td>
+ &lt;td>8080 (HTTP) / 9090 (health)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Replicas&lt;/strong>&lt;/td>
+ &lt;td>2 + HPA&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Dependencies&lt;/strong>&lt;/td>
+ &lt;td>NATS&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>The API Gateway is the public REST API entry point for all client interactions with the Sankofa Engine.&lt;/p>
+&lt;p>&lt;strong>Key Responsibilities:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Request validation against JSON schemas&lt;/li>
+&lt;li>JWT authentication and ECDSA request signature verification&lt;/li>
+&lt;li>RBAC policy enforcement via Casbin&lt;/li>
+&lt;li>Rate limiting per tenant and per endpoint&lt;/li>
+&lt;li>FNV-1a shard routing — deterministically maps &lt;code>account_id&lt;/code> to the correct shard subject&lt;/li>
+&lt;li>NATS RPC proxying — publishes validated requests to JetStream and returns signed receipts to callers&lt;/li>
+&lt;/ul>
+&lt;h2 id="shard-worker">Shard Worker&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Property&lt;/th>
+ &lt;th>Value&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Port&lt;/strong>&lt;/td>
+ &lt;td>9090 (health only)&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Replicas&lt;/strong>&lt;/td>
+ &lt;td>3 + HPA&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Dependencies&lt;/strong>&lt;/td>
+ &lt;td>NATS, ScyllaDB, OpenBao&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;p>Shard Workers are the core transaction-processing units. Each worker is assigned one or more shards by the Shard Orchestrator and processes all transactions routed to those shards.&lt;/p></description></item><item><title>Security Overview</title><link>https://docs.sankofa.foundation/overview/security/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.sankofa.foundation/overview/security/</guid><description>&lt;p>The Sankofa Engine implements defense-in-depth security across authentication, authorization, encryption, and audit logging. This page provides a high-level overview — for detailed documentation, see the &lt;a href="https://docs.sankofa.foundation/security/">Security &amp;amp; Compliance&lt;/a> section.&lt;/p>
+&lt;h2 id="security-architecture-summary">Security Architecture Summary&lt;/h2>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>Layer&lt;/th>
+ &lt;th>Implementation&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>&lt;strong>Authentication&lt;/strong>&lt;/td>
+ &lt;td>JWT tokens via API key exchange, ECDSA P-256 transaction signing for self-custody&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Authorization&lt;/strong>&lt;/td>
+ &lt;td>Casbin v2 RBAC with policy-based access control&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Encryption at Rest&lt;/strong>&lt;/td>
+ &lt;td>AES-GCM-256 envelope encryption with KMS-derived keys&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Encryption in Transit&lt;/strong>&lt;/td>
+ &lt;td>mTLS between services, TLS for client connections&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Audit Trail&lt;/strong>&lt;/td>
+ &lt;td>SHA-256 hash chains per account, ECDSA P-256 signed receipts&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Key Management&lt;/strong>&lt;/td>
+ &lt;td>OpenBao (Vault fork) transit backend, AWS KMS support&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>&lt;strong>Infrastructure&lt;/strong>&lt;/td>
+ &lt;td>Kubernetes namespace isolation, network policies, secret scoping&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="detailed-documentation">Detailed Documentation&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/controls/">Security Controls&lt;/a> — SOC 2 Trust Service Criteria mapping&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/encryption/">Encryption&lt;/a> — Encryption at rest, in transit, and key management&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/access-control/">Access Control&lt;/a> — Authentication, authorization, and infrastructure access&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/audit-logging/">Audit Logging&lt;/a> — Hash chains, signed receipts, and event retention&lt;/li>
+&lt;li>&lt;a href="https://docs.sankofa.foundation/security/data-residency/">Data Residency&lt;/a> — Storage tiers, retention policies, and archival&lt;/li>
+&lt;/ul></description></item></channel></rss>
