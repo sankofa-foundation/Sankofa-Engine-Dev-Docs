@@ -4,6 +4,9 @@ contentDir = "content"
 defaultContentLanguage = "en"
 defaultContentLanguageInSubdir = false
 
+[cascade]
+  type = "docs"
+
 [module]
   proxy = "direct"
   [module.hugoVersion]
