@@ -1,6 +1,61 @@
 // Custom styles for Sankofa Engine docs
 // Compact, developer-friendly density
 
+// ── Sankofa brand: navbar ──────────────────────────────────────────
+.sankofa-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.sankofa-brand .navbar-logo svg {
+  height: 28px;
+  width: auto;
+}
+
+.sankofa-brand__name {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+// ── Sankofa brand: hero ────────────────────────────────────────────
+.sankofa-hero-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sankofa-hero-logo {
+  height: 80px;
+  width: auto;
+  margin-bottom: 0.5rem;
+}
+
+.sankofa-hero-company {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sankofa-hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+
+// Hide Docsy's default cover title when we supply our own
+.td-cover-block .td-overlay__title:empty {
+  display: none;
+}
+
 // Compact, dense tables
 .td-content table:not(.swagger-ui table) {
   table-layout: fixed;

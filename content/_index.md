@@ -4,8 +4,13 @@ linkTitle: "Sankofa Engine"
 type: default
 ---
 
-{{% blocks/cover title="Sankofa Engine" image_anchor="top" height="med" color="primary" %}}
-<p class="lead mt-4">Developer Documentation</p>
+{{% blocks/cover title="" image_anchor="top" height="med" color="primary" %}}
+<div class="sankofa-hero-brand">
+  <img src="/img/sankofa-infinity-chain-light-color.svg" alt="Sankofa Labs" class="sankofa-hero-logo" />
+  <span class="sankofa-hero-company">SANKOFA LABS, INC.</span>
+</div>
+<h1 class="sankofa-hero-title">Sankofa Engine</h1>
+<p class="lead mt-2">Developer Documentation</p>
 <p>A sharded, privacy-preserving financial ledger engine for digital assets.</p>
 <p>
   <a class="btn btn-lg btn-primary me-3 mb-4" href="/overview/introduction/">
